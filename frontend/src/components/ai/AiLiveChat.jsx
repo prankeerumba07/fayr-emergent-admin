@@ -21,6 +21,12 @@ function confTone(c) {
   return { c: "text-rose-600", bar: "bg-rose-500" };
 }
 
+function chatBubbleClass(isCustomer, isAi) {
+  if (isCustomer) return "rounded-tl-sm border border-slate-200 bg-white text-slate-700";
+  if (isAi) return "rounded-tr-sm bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20";
+  return "rounded-tr-sm bg-slate-900 text-white";
+}
+
 export default function AiLiveChat() {
   const { currentAgent, agents } = useApp();
   const [chats, setChats] = useState([]);
@@ -168,7 +174,7 @@ export default function AiLiveChat() {
                 const isAi = m.ai;
                 return (
                   <div key={m.id} className={`flex ${isCustomer ? "justify-start" : "justify-end"}`}>
-                    <div className={`max-w-[72%] rounded-2xl px-4 py-2.5 ${isCustomer ? "rounded-tl-sm border border-slate-200 bg-white text-slate-700" : isAi ? "rounded-tr-sm bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20" : "rounded-tr-sm bg-slate-900 text-white"}`}>
+                    <div className={`max-w-[72%] rounded-2xl px-4 py-2.5 ${chatBubbleClass(isCustomer, isAi)}`}>
                       {!isCustomer && <p className={`mb-0.5 flex items-center gap-1 text-[10px] font-semibold ${isAi ? "text-indigo-100" : "text-slate-300"}`}>{isAi ? <><Bot size={10} /> Fayr Assistant</> : m.author_name}</p>}
                       <p className="text-sm leading-relaxed">{m.body}</p>
                       <p className={`mt-1 text-[10px] ${isCustomer ? "text-slate-400" : "text-white/60"}`}>{timeAgo(m.created_at)}</p>

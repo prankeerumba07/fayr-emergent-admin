@@ -15,6 +15,33 @@ const UPI_STYLE = {
   pending: "border-amber-200 bg-amber-50 text-amber-700",
 };
 
+const LEDGER_STYLE = {
+  credit: { chip: "bg-emerald-50 text-emerald-600", amt: "text-emerald-600", sign: "+" },
+  debit: { chip: "bg-rose-50 text-rose-600", amt: "text-rose-600", sign: "\u2212" },
+  hold: { chip: "bg-slate-100 text-slate-500", amt: "text-slate-400", sign: "" },
+};
+const LEDGER_ICON = { credit: ArrowDownRight, debit: ArrowUpRight, hold: Clock };
+
+function LedgerRow({ e }) {
+  const st = LEDGER_STYLE[e.type] || LEDGER_STYLE.hold;
+  const Icon = LEDGER_ICON[e.type] || Clock;
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+      <div className="flex items-center gap-2">
+        <div className={`rounded-lg p-1.5 ${st.chip}`}><Icon size={14} /></div>
+        <div>
+          <p className="text-xs font-medium text-slate-700">{e.note}</p>
+          <p className="text-[10px] text-slate-400">{new Date(e.date).toLocaleString("en-IN")}</p>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className={`font-mono text-sm font-semibold ${st.amt}`}>{st.sign}{e.amount ? inr(e.amount) : "\u2014"}</p>
+        <p className="font-mono text-[10px] text-slate-400">bal {inr(e.balance)}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function Finance() {
   const { agents } = useApp();
   const [rows, setRows] = useState([]);
@@ -127,25 +154,7 @@ export default function Finance() {
                 <p className="mt-1 text-[11px] text-slate-400">Append-only double-entry ledger · integer paise</p>
               </div>
               <div className="space-y-2">
-                {ledger.ledger.map((e, i) => (
-                  <div key={`${e.type}-${e.date}-${i}`} className="flex items-center justify-between rounded-lg border border-slate-200 p-3">
-                    <div className="flex items-center gap-2">
-                      <div className={`rounded-lg p-1.5 ${e.type === "credit" ? "bg-emerald-50 text-emerald-600" : e.type === "debit" ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500"}`}>
-                        {e.type === "credit" ? <ArrowDownRight size={14} /> : e.type === "debit" ? <ArrowUpRight size={14} /> : <Clock size={14} />}
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-700">{e.note}</p>
-                        <p className="text-[10px] text-slate-400">{new Date(e.date).toLocaleString("en-IN")}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-mono text-sm font-semibold ${e.type === "credit" ? "text-emerald-600" : e.type === "debit" ? "text-rose-600" : "text-slate-400"}`}>
-                        {e.type === "debit" ? "−" : e.type === "credit" ? "+" : ""}{e.amount ? inr(e.amount) : "—"}
-                      </p>
-                      <p className="font-mono text-[10px] text-slate-400">bal {inr(e.balance)}</p>
-                    </div>
-                  </div>
-                ))}
+                {ledger.ledger.map((e, i) => <LedgerRow key={`${e.type}-${e.date}-${i}`} e={e} />)}
               </div>
             </div>
           )}

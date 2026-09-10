@@ -22,6 +22,12 @@ import {
 const TICKET_FILTERS = ["all", "open", "pending", "escalated", "resolved"];
 const FADE_MOTION = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.2 } };
 
+function ticketBubbleClass(isNote, isCustomer) {
+  if (isNote) return "border-amber-200 bg-amber-50";
+  if (isCustomer) return "border-slate-200 bg-white";
+  return "border-slate-800 bg-slate-900 text-white";
+}
+
 function TransferDialog({ open, onOpenChange, agents, onConfirm, kind = "ticket" }) {
   const [agentId, setAgentId] = useState("");
   const [note, setNote] = useState("");
@@ -234,7 +240,7 @@ function InboxView() {
                 const isCustomer = m.author_type === "customer";
                 return (
                   <div key={m.id} className={`flex ${isCustomer ? "justify-start" : "justify-end"}`}>
-                    <div className={`max-w-[78%] rounded-2xl border p-4 ${isNote ? "border-amber-200 bg-amber-50" : isCustomer ? "border-slate-200 bg-white" : "border-slate-800 bg-slate-900 text-white"}`}>
+                    <div className={`max-w-[78%] rounded-2xl border p-4 ${ticketBubbleClass(isNote, isCustomer)}`}>
                       <div className="mb-1 flex items-center gap-2">
                         <span className={`text-xs font-semibold ${isCustomer || isNote ? "text-slate-700" : "text-white"}`}>{m.author_name}</span>
                         {isNote && <Pill className="border-amber-300 bg-amber-100 text-amber-800"><StickyNote size={10} /> Note</Pill>}

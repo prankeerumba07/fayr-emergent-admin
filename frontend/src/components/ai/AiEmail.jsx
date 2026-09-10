@@ -16,6 +16,13 @@ function confTone(c) {
 
 const RESULT_MOTION = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
 
+function emailBubbleClass(isNote, isCustomer, isAi) {
+  if (isNote) return "border-amber-200 bg-amber-50";
+  if (isCustomer) return "border-slate-200 bg-white";
+  if (isAi) return "border-transparent bg-gradient-to-br from-indigo-600 to-violet-600 text-white";
+  return "border-slate-800 bg-slate-900 text-white";
+}
+
 export default function AiEmail() {
   const { currentAgent } = useApp();
   const [tickets, setTickets] = useState([]);
@@ -94,7 +101,7 @@ export default function AiEmail() {
                 const isAi = m.ai;
                 return (
                   <div key={m.id} className={`flex ${isCustomer ? "justify-start" : "justify-end"}`}>
-                    <div className={`max-w-[78%] rounded-2xl border p-4 ${isNote ? "border-amber-200 bg-amber-50" : isCustomer ? "border-slate-200 bg-white" : isAi ? "border-transparent bg-gradient-to-br from-indigo-600 to-violet-600 text-white" : "border-slate-800 bg-slate-900 text-white"}`}>
+                    <div className={`max-w-[78%] rounded-2xl border p-4 ${emailBubbleClass(isNote, isCustomer, isAi)}`}>
                       <p className={`mb-1 flex items-center gap-1 text-xs font-semibold ${isCustomer || isNote ? "text-slate-700" : "text-white/90"}`}>{isAi && <Bot size={11} />}{m.author_name}</p>
                       <p className={`whitespace-pre-wrap text-sm leading-relaxed ${isCustomer || isNote ? "text-slate-700" : "text-white"}`}>{m.body}</p>
                     </div>
