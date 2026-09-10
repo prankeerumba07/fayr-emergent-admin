@@ -1,0 +1,37 @@
+{
+  "summary": "Full end-to-end test of the new 'Fayr Assistant' AI Agent. Backend: 10/10 new pytest cases in /app/backend/tests/test_ai_agent.py all passed against real EMERGENT_LLM_KEY (Claude Sonnet 4.6). Covered KB CRUD, canned CRUD, training-insights shape, chat-start (AI greeting w/ confidence 0.95), customer-message auto-reply, forced handoff on 'talk to a human' keyword (ai_active=false, handled_by=human, handoff_reason set), manual handoff + resume-ai, learning loop (examples_count grew after agent reply), and /tickets/{id}/ai-process returning either sent or draft mode with populated ai_draft. Previous iteration_1 suite still passes. Frontend: Playwright against public REACT_APP_BACKEND_URL verified all five tabs render, Simulate dialog creates chat and AI auto-greets as 'Fayr Assistant', 'Speak as Customer' with human-request message triggers handoff banner + takeover/resume buttons, 'Speak as Agent' send works and is captured for learning (visible in Training Insights 'Recently learned agent replies' — the exact TEST reply appeared), KB add-article increases card count 8→9, canned add increases 6→7, Insights tab shows all stat cards (Replies learned 6, KB 9, Canned 7, AI resolution 40%), keyword bar chart, AI vs Human handoff donut, learned rows, top-canned rows, AI Email tab lists tickets, ai-process-btn returns a 72% confidence editable draft with Approve & Send button. Sidebar nav-ai present and routes to /assistant.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "AI Assistant dialogs (Simulate/KB/Canned)", "issues": ["Radix DialogContent missing aria-describedby / <DialogDescription> — a11y warning in console. Cosmetic only."]},
+      {"screen": "Training Insights charts", "issues": ["Recharts logs 'width(-1) height(-1)' warnings on first paint when the container is not yet sized; charts render correctly after animation. Consider wrapping in a fixed-min-height container to silence."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_ai_agent.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/ai_agent_results.xml"
+  ],
+  "action_items": [
+    "(Optional a11y) Add DialogDescription (or aria-describedby) to Dialogs in AiLiveChat / KnowledgeBase / CannedResponses to remove Radix warnings.",
+    "(Optional) Give Recharts ResponsiveContainer a minHeight to suppress width/height(-1) warnings on first render."
+  ],
+  "critical_code_review_comments": [
+    "server.py now 1071 lines — should be split into routers (chats, tickets, ai_agent, kb, canned) for maintainability.",
+    "run_llm creates a new LlmChat per call — session_id=new_id() means no conversational memory carried in the SDK itself; fine because history is stitched in prompt, but note that repeated non-cached calls cost latency (~5-15s each). Consider caching KB context per request to avoid rebuilding on every _ai_turn.",
+    "ai_email_reply / ai_chat_reply catch nothing — if run_llm raises, the /chats/customer-message and /tickets/ai-process endpoints will 500 with raw error text. Wrap in try/except and return a graceful fallback (e.g., low-confidence handoff).",
+    "extract_json regex '\\{.*\\}' with DOTALL will grab the outermost braces but can fail if LLM emits multiple JSON blocks or a stray '}' inside a string. Consider using json.JSONDecoder().raw_decode.",
+    "reply_ticket learning-capture uses substring check `'AI' not in body.agent_name` — a human agent named e.g. 'Nikhil AI Khan' would be excluded. Prefer an explicit `is_ai` flag on the request.",
+    "Training-insights ai_chats query is `$or: [{handled_by: 'ai'}, {handoff_reason: {$ne: null}}]` — the second branch also matches chats that only had a manual handoff (never AI-handled), inflating the denominator of the resolution rate.",
+    "HUMAN_REQUEST_KEYWORDS list contains overlapping entries (e.g., 'human', 'want an agent'); works but noisy. Consider a compiled regex."
+  ],
+  "updated_files": ["/app/backend/tests/test_ai_agent.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "N/A (no auth per user choice)",
+  "seed_data_creation": "Backend auto-seeds on startup; new KB(8) + canned(6) + ai_examples(4) seeded alongside existing agents/tickets/chats. Tests create TEST_-prefixed rows and clean up KB/canned via DELETE.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Two backend test files now exist: backend_test.py (original 19 tests) + test_ai_agent.py (10 AI-agent tests, ~25s runtime because 4 real Claude Sonnet 4.6 calls). Run both. AI responses are non-deterministic — never assert exact text; assert structure (mode in {sent,draft}, ai_active toggles, handoff_reason non-empty, examples_count grows). Simulate flow: click new-chat-btn -> fill new-chat-name/message -> create-chat-confirm; wait ~15s for AI reply. Handoff trigger: send 'I want to talk to a human agent' via ai-chat-input while Speak-as-Customer selected."
+}

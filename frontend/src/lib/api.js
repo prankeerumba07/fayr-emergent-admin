@@ -42,4 +42,22 @@ export const api = {
   // ai
   aiReplySuggestions: (payload) => client.post("/ai/reply-suggestions", payload),
   aiChatSummary: (payload) => client.post("/ai/chat-summary", payload),
+  // agentic AI
+  startChat: (payload) => client.post("/chats/start", payload),
+  customerMessage: (id, payload) => client.post(`/chats/${id}/customer-message`, payload),
+  chatHandoff: (id, reason) => client.post(`/chats/${id}/handoff`, { reason }),
+  resumeAi: (id) => client.post(`/chats/${id}/resume-ai`),
+  aiProcessTicket: (id) => client.post(`/tickets/${id}/ai-process`),
+  // knowledge base
+  getKbArticles: () => client.get("/kb-articles"),
+  createKb: (payload) => client.post("/kb-articles", payload),
+  updateKb: (id, payload) => client.patch(`/kb-articles/${id}`, payload),
+  deleteKb: (id) => client.delete(`/kb-articles/${id}`),
+  // canned responses
+  getCanned: () => client.get("/canned-responses"),
+  createCanned: (payload) => client.post("/canned-responses", payload),
+  updateCanned: (id, payload) => client.patch(`/canned-responses/${id}`, payload),
+  deleteCanned: (id) => client.delete(`/canned-responses/${id}`),
+  // training insights
+  getTrainingInsights: () => client.get("/ai/training-insights"),
 };

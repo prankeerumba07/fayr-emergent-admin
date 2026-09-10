@@ -6,6 +6,8 @@ import os
 import logging
 import uuid
 import random
+import json
+import re
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
@@ -200,7 +202,8 @@ async def do_seed(force=False):
     if not force and await db.agents.count_documents({}) > 0:
         return {"seeded": False, "message": "Data already present"}
 
-    for c in ["agents", "tickets", "chats", "claims", "withdrawals", "banners", "reward_rules", "ux_issues", "audit_logs"]:
+    for c in ["agents", "tickets", "chats", "claims", "withdrawals", "banners", "reward_rules",
+              "ux_issues", "audit_logs", "kb_articles", "canned_responses", "ai_examples"]:
         await db[c].delete_many({})
 
     agents = []
@@ -246,6 +249,7 @@ async def do_seed(force=False):
             "id": new_id(), "customer_name": name, "customer_email": email, "marketplace": mkt,
             "status": status, "assignee_id": assignee, "sentiment": sentiment,
             "waiting": status == "waiting",
+            "handled_by": "human", "ai_active": False, "handoff_reason": None,
             "started_at": started.isoformat(),
             "last_at": (started + timedelta(minutes=len(msgs))).isoformat(),
             "messages": msg_objs,
@@ -282,6 +286,45 @@ async def do_seed(force=False):
             "created_at": created.isoformat(), "ledger": ledger,
         })
     await db.withdrawals.insert_many([dict(w) for w in withdrawals])
+
+    kb_seed = [
+        ("What is Fayr?", "Getting Started", "Fayr is an incentivized review and refund platform for Indian e-commerce marketplaces (Amazon, Flipkart, Meesho, Myntra). A user claims a task, buys the product, writes a genuine review, and once the review is publicly live and the marketplace return window has closed, Fayr refunds the product amount to the user."),
+        ("Ticket Economy", "Rewards", "Every user starts with 15 tickets. Claiming a task deducts 5 tickets, which are consumed once the product is purchased. Tickets are returned if a claim expires, and 10 tickets are returned to the user after a task is completed successfully."),
+        ("Refunds & Holding Period", "Refunds", "A refund is only released after the review is publicly live AND the marketplace return window has closed. During the holding period Fayr re-runs a public visibility check; if the review was deleted mid-hold, the refund is stopped before it releases."),
+        ("Verification & Evidence", "Verification", "Public scraping of the live review is the primary verification path. Screenshot/OCR is only a supporting fallback, never the sole evidence, and never auto-approves. Pending OCR cases must be approved by a support/ops staff member before a task advances."),
+        ("Wallet & Withdrawals", "Payments", "The wallet is an append-only double-entry ledger stored in integer paise. Withdrawals are finance-gated: a finance team member approves each payout, and the user's UPI/bank details are verified before disbursement."),
+        ("Fraud & Account Rules", "Trust & Safety", "Multiple accounts are detected via UPI/bank de-duplication and PAN anchoring. Screenshot forgery is countered by the evidence hierarchy (live scrape beats DKIM email beats screenshot). Deleting a review after payout can trigger a clawback per the Terms."),
+        ("Supported Marketplaces", "Getting Started", "Fayr targets Amazon, Flipkart, Meesho, Myntra, Blinkit, Zepto and Instamart. Amazon and Flipkart are live first; others are rolling out."),
+        ("Login & OTP", "Account", "Fayr uses mobile-number-only authentication. Users log in with their phone number and a one-time password (OTP) delivered over SMS."),
+    ]
+    await db.kb_articles.insert_many([
+        {"id": new_id(), "title": t, "category": cat, "content": c, "tags": [], "source": "CLAUDE.md", "updated_at": now_iso()}
+        for (t, cat, c) in kb_seed
+    ])
+
+    canned_seed = [
+        ("Refund delayed", "Refunds", "both", "Thanks for reaching out! I can see your review is live \u2014 refunds are released only after your review stays public past the marketplace return window. Once that window closes, your \u20b9 amount is credited to your Fayr wallet automatically. I'll keep an eye on this one for you."),
+        ("Review rejected", "Verification", "both", "I understand the frustration. A claim can be rejected if the live review couldn't be verified on the product page or the details didn't match the order. Could you share the review link so I can take a closer look?"),
+        ("Withdrawal failed", "Payments", "both", "Sorry about the trouble withdrawing! Withdrawals go through a quick finance verification and your UPI ID needs to be verified first. Let me check your UPI status and get this moving for you."),
+        ("UPI verification pending", "Payments", "both", "Your UPI is currently under verification \u2014 this is a one-time security check before your first payout. It usually clears within a day. I'll flag it to speed things up."),
+        ("How ticket economy works", "Rewards", "both", "Great question! You start with 15 tickets. Claiming a task uses 5 (locked when you buy), and you get 10 back once the task is completed. If a claim expires, your tickets are returned."),
+        ("App crash / bug", "Technical", "both", "Sorry you hit a glitch! Could you tell me your app version and phone model? As a quick fix, clearing the app cache and retrying the upload resolves this for most users while our team pushes a fix."),
+    ]
+    await db.canned_responses.insert_many([
+        {"id": new_id(), "title": t, "category": cat, "channel": ch, "body": b, "usage_count": random.randint(3, 40), "updated_at": now_iso()}
+        for (t, cat, ch, b) in canned_seed
+    ])
+
+    example_seed = [
+        ("when will i get my refund", "Your refund releases automatically once your review stays live past the return window \u2014 I can see yours is on track, hang tight!", "chat"),
+        ("my withdrawal is not working", "Let me check your UPI verification status \u2014 that's usually why a withdrawal doesn't go through. I'll sort it out.", "chat"),
+        ("why was my review rejected", "It looks like we couldn't verify the live review on the product page. Share the review link and I'll re-check it right away.", "email"),
+        ("how many tickets do i have", "You start with 15 tickets \u2014 claiming a task uses 5 and you get 10 back on completion. Want me to check your current balance?", "chat"),
+    ]
+    await db.ai_examples.insert_many([
+        {"id": new_id(), "user_question": q, "agent_reply": r, "channel": ch, "source": "agent_reply", "created_at": now_iso()}
+        for (q, r, ch) in example_seed
+    ])
 
     await db.banners.insert_many([
         {"id": new_id(), "title": t, "marketplace": m, "status": s, "placement": p, "ctr": ctr, "impressions": imp}
@@ -363,6 +406,12 @@ async def reply_ticket(ticket_id: str, body: ReplyIn):
         update["$set"]["status"] = "pending"
     await db.tickets.update_one({"id": ticket_id}, update)
     await log_audit(body.agent_name, "reply" if body.mode != "note" else "note", "ticket", ticket_id)
+    if body.mode != "note":
+        last_cust = next((m["body"] for m in reversed(t.get("messages", [])) if m["author_type"] == "customer"), "")
+        if last_cust and "AI" not in body.agent_name:
+            await db.ai_examples.insert_one({"id": new_id(), "user_question": last_cust, "agent_reply": body.body,
+                                             "channel": "email", "source": "agent_reply", "created_at": now_iso()})
+        await db.tickets.update_one({"id": ticket_id}, {"$set": {"ai_draft": None}})
     return await db.tickets.find_one({"id": ticket_id}, PROJ)
 
 
@@ -425,10 +474,14 @@ async def send_chat_message(chat_id: str, body: ReplyIn):
     if not c:
         raise HTTPException(404, "Chat not found")
     msg = {"id": new_id(), "author_type": "agent", "author_name": body.agent_name, "body": body.body, "created_at": now_iso()}
-    upd = {"$push": {"messages": msg}, "$set": {"last_at": now_iso(), "waiting": False}}
+    upd = {"$push": {"messages": msg}, "$set": {"last_at": now_iso(), "waiting": False, "handled_by": "human", "ai_active": False}}
     if c.get("status") == "waiting":
         upd["$set"]["status"] = "active"
     await db.chats.update_one({"id": chat_id}, upd)
+    last_cust = next((m["body"] for m in reversed(c.get("messages", [])) if m["author_type"] == "customer"), "")
+    if last_cust and "AI" not in body.agent_name:
+        await db.ai_examples.insert_one({"id": new_id(), "user_question": last_cust, "agent_reply": body.body,
+                                         "channel": "chat", "source": "agent_reply", "created_at": now_iso()})
     return await db.chats.find_one({"id": chat_id}, PROJ)
 
 
@@ -439,7 +492,7 @@ async def assign_chat(chat_id: str, body: AssignIn):
         raise HTTPException(404, "Agent not found")
     sys_msg = {"id": new_id(), "author_type": "system", "author_name": "System",
                "body": f"Chat picked up by {agent['name']}.", "created_at": now_iso()}
-    await db.chats.update_one({"id": chat_id}, {"$set": {"assignee_id": body.agent_id, "status": "active", "waiting": False}, "$push": {"messages": sys_msg}})
+    await db.chats.update_one({"id": chat_id}, {"$set": {"assignee_id": body.agent_id, "status": "active", "waiting": False, "handled_by": "human", "ai_active": False}, "$push": {"messages": sys_msg}})
     await log_audit(body.by, "assign", "chat", chat_id, {"agent": agent["name"]})
     return await db.chats.find_one({"id": chat_id}, PROJ)
 
@@ -669,6 +722,340 @@ async def ai_chat_summary(body: AiSummaryIn):
     except Exception as e:
         logger.error(f"AI error: {e}")
         raise HTTPException(500, f"AI service error: {str(e)}")
+
+
+# ============================= AI AGENT ENGINE =============================
+IST = timezone(timedelta(hours=5, minutes=30))
+HUMAN_REQUEST_KEYWORDS = [
+    "human", "real agent", "real person", "representative", "talk to someone", "speak to someone",
+    "customer care", "support executive", "connect me to", "live agent", "not a bot", "not a robot",
+    "want an agent", "talk to a person", "real support",
+]
+STOPWORDS = set("the a an is are was were do does did i you my me we our us to of in on for and or but not it "
+                "this that with cant cant't have has had will would should can could get got be been am so if "
+                "at as by from your their there here what when why how who whom about into out up down".split())
+
+
+class StartChatIn(BaseModel):
+    customer_name: str
+    marketplace: str = "Amazon"
+    message: str
+    customer_email: Optional[str] = ""
+
+
+class CustomerMsgIn(BaseModel):
+    body: str
+
+
+class HandoffIn(BaseModel):
+    reason: Optional[str] = "Requested by user"
+
+
+class TakeoverIn(BaseModel):
+    agent_id: str
+
+
+class KBIn(BaseModel):
+    title: str
+    category: str = "General"
+    content: str
+    tags: List[str] = []
+
+
+class CannedIn(BaseModel):
+    title: str
+    category: str = "General"
+    channel: str = "both"
+    body: str
+
+
+def greeting_for_now():
+    h = datetime.now(IST).hour
+    if h < 12:
+        return "Good morning"
+    if h < 17:
+        return "Good afternoon"
+    return "Good evening"
+
+
+def extract_json(text):
+    if not text:
+        return None
+    t = text.strip()
+    t = re.sub(r"^```(json)?", "", t).strip()
+    t = re.sub(r"```$", "", t).strip()
+    m = re.search(r"\{.*\}", t, re.S)
+    if not m:
+        return None
+    try:
+        return json.loads(m.group(0))
+    except Exception:
+        return None
+
+
+async def build_kb_context():
+    kb = await db.kb_articles.find({}, PROJ).to_list(100)
+    canned = await db.canned_responses.find({}, PROJ).to_list(100)
+    examples = await db.ai_examples.find({}, PROJ).sort("created_at", -1).to_list(15)
+    kb_text = "\n".join(["- [" + a.get("category", "General") + "] " + a["title"] + ": " + a["content"] for a in kb]) or "No articles yet."
+    canned_text = "\n".join(["- " + c["title"] + ": " + c["body"] for c in canned]) or "No canned responses yet."
+    ex_text = "\n".join(["User: " + e["user_question"] + "\nAgent: " + e["agent_reply"] for e in examples]) or "No prior examples yet."
+    return kb_text, canned_text, ex_text
+
+
+SUPPORT_PERSONA = (
+    "You are 'Fayr Assistant', the AI customer support agent for Fayr, an incentivized review & refund "
+    "platform for Indian e-commerce (Amazon, Flipkart, Meesho, Myntra). You speak like a warm, real human "
+    "support agent from India \u2014 never robotic. Rules you must always follow: "
+    "1) Be concise and genuinely helpful. Never over-explain or repeat information you already gave. "
+    "2) Vary your wording every single turn \u2014 never reuse a greeting or sentence you already used in this conversation. "
+    "3) Never pressure the user, never push to close the chat, never over-convince. Let the conversation breathe. "
+    "4) Use the knowledge base and canned responses below as your source of truth, and mirror the tone of the past human agent replies. "
+    "5) Use Indian English and the \u20b9 symbol for money. Sound human \u2014 friendly, empathetic, respectful."
+)
+
+
+async def _kb_system():
+    kb_text, canned_text, ex_text = await build_kb_context()
+    return (SUPPORT_PERSONA + "\n\nKNOWLEDGE BASE:\n" + kb_text +
+            "\n\nCANNED RESPONSES:\n" + canned_text +
+            "\n\nHOW OUR HUMAN AGENTS REPLY (learn their tone & handling):\n" + ex_text)
+
+
+async def ai_chat_reply(chat):
+    system = await _kb_system()
+    history = "\n".join([m["author_type"].upper() + ": " + m["body"]
+                         for m in chat.get("messages", []) if m["author_type"] in ("customer", "agent")])
+    prompt = (
+        "Current time of day in India: " + greeting_for_now() + ".\n"
+        "Conversation so far:\n" + history + "\n\n"
+        "Write the best next reply as Fayr Assistant. If it is just a greeting, greet warmly using the time of day and "
+        "ask how you can help (do not repeat a greeting you already used). Set needs_handoff to true ONLY if: the user "
+        "asks for a human/real agent, you are genuinely not confident you can resolve their issue, or the user is clearly "
+        "frustrated or angry. When handing off, your message should reassure them you're connecting them to a teammate.\n\n"
+        "Respond ONLY with a JSON object with keys: message (string), needs_handoff (boolean), "
+        "handoff_reason (string, empty if none), confidence (number 0 to 1), sentiment (positive, neutral, or frustrated)."
+    )
+    try:
+        text = await run_llm(system, prompt)
+    except Exception as e:
+        logger.error("AI chat error: " + str(e))
+        return {"message": "Let me connect you with one of our support teammates who can help you further.",
+                "needs_handoff": True, "handoff_reason": "AI temporarily unavailable", "confidence": 0.0, "sentiment": "neutral"}
+    return extract_json(text) or {"message": text, "needs_handoff": False, "handoff_reason": "",
+                                   "confidence": 0.6, "sentiment": "neutral"}
+
+
+async def ai_email_reply(ticket):
+    system = await _kb_system()
+    convo = "\n".join([m["author_type"].upper() + ": " + m["body"]
+                       for m in ticket.get("messages", []) if m["author_type"] in ("customer", "agent", "note")])
+    prompt = (
+        "Subject: " + ticket.get("subject", "") + "\nConversation:\n" + convo + "\n\n"
+        "Draft the best email reply as Fayr Assistant. Set auto_send to true ONLY if this is a simple, well-covered FAQ "
+        "you can fully and confidently answer, and it does NOT involve money disbursement, account bans/flags, refunds "
+        "being denied, or an angry complaint. For anything sensitive, risky, or where you are unsure, set auto_send=false "
+        "so a human agent reviews your draft.\n\n"
+        "Respond ONLY with a JSON object with keys: message (string, the full email reply), auto_send (boolean), "
+        "confidence (number 0 to 1), canned_used (string title or empty), category (string)."
+    )
+    try:
+        text = await run_llm(system, prompt)
+    except Exception as e:
+        logger.error("AI email error: " + str(e))
+        return {"message": "", "auto_send": False, "confidence": 0.0, "canned_used": "", "category": "General"}
+    return extract_json(text) or {"message": text, "auto_send": False, "confidence": 0.5, "canned_used": "", "category": "General"}
+
+
+async def _ai_turn(chat_id):
+    chat = await db.chats.find_one({"id": chat_id})
+    if not chat or not chat.get("ai_active"):
+        return {"acted": False}
+    last_customer = next((m["body"] for m in reversed(chat["messages"]) if m["author_type"] == "customer"), "")
+    forced = any(k in last_customer.lower() for k in HUMAN_REQUEST_KEYWORDS)
+    data = await ai_chat_reply(chat)
+    conf = float(data.get("confidence", 0.7) or 0.7)
+    needs = bool(data.get("needs_handoff")) or forced or conf < 0.45
+    reason = data.get("handoff_reason") or ("User asked for a human agent" if forced else ("AI low confidence" if conf < 0.45 else ""))
+    ai_msg = {"id": new_id(), "author_type": "agent", "author_name": "Fayr Assistant (AI)",
+              "body": data.get("message", ""), "created_at": now_iso(), "ai": True}
+    await db.chats.update_one({"id": chat_id}, {"$push": {"messages": ai_msg},
+                              "$set": {"last_at": now_iso(), "sentiment": data.get("sentiment", "neutral")}})
+    if needs:
+        sys_msg = {"id": new_id(), "author_type": "system", "author_name": "System",
+                   "body": "AI handed this chat to a human agent \u2014 " + (reason or "needs human help") + ".",
+                   "created_at": now_iso()}
+        await db.chats.update_one({"id": chat_id}, {"$push": {"messages": sys_msg},
+                                  "$set": {"ai_active": False, "handled_by": "human", "status": "waiting",
+                                           "waiting": True, "handoff_reason": reason}})
+        await log_audit("Fayr Assistant (AI)", "handoff", "chat", chat_id, {"reason": reason})
+    return {"acted": True, "handoff": needs, "reason": reason, "confidence": conf,
+            "sentiment": data.get("sentiment", "neutral"), "message": data.get("message", "")}
+
+
+@api_router.post("/chats/start")
+async def start_chat(body: StartChatIn):
+    now = now_iso()
+    email = body.customer_email or (body.customer_name.lower().replace(" ", ".") + "@example.com")
+    chat = {
+        "id": new_id(), "customer_name": body.customer_name, "customer_email": email,
+        "marketplace": body.marketplace, "status": "active", "assignee_id": None, "sentiment": "neutral",
+        "waiting": False, "handled_by": "ai", "ai_active": True, "handoff_reason": None,
+        "started_at": now, "last_at": now,
+        "messages": [{"id": new_id(), "author_type": "customer", "author_name": body.customer_name,
+                      "body": body.message, "created_at": now}],
+    }
+    await db.chats.insert_one(dict(chat))
+    meta = await _ai_turn(chat["id"])
+    updated = await db.chats.find_one({"id": chat["id"]}, PROJ)
+    return {"chat": updated, "ai": meta}
+
+
+@api_router.post("/chats/{chat_id}/customer-message")
+async def customer_message(chat_id: str, body: CustomerMsgIn):
+    chat = await db.chats.find_one({"id": chat_id})
+    if not chat:
+        raise HTTPException(404, "Chat not found")
+    msg = {"id": new_id(), "author_type": "customer", "author_name": chat["customer_name"],
+           "body": body.body, "created_at": now_iso()}
+    setd = {"last_at": now_iso()}
+    if not chat.get("ai_active"):
+        setd["waiting"] = True
+    await db.chats.update_one({"id": chat_id}, {"$push": {"messages": msg}, "$set": setd})
+    meta = {"acted": False}
+    if chat.get("ai_active"):
+        meta = await _ai_turn(chat_id)
+    updated = await db.chats.find_one({"id": chat_id}, PROJ)
+    return {"chat": updated, "ai": meta}
+
+
+@api_router.post("/chats/{chat_id}/handoff")
+async def chat_handoff(chat_id: str, body: HandoffIn):
+    sys_msg = {"id": new_id(), "author_type": "system", "author_name": "System",
+               "body": "Handed off to a human agent \u2014 " + (body.reason or "manual handoff") + ".", "created_at": now_iso()}
+    await db.chats.update_one({"id": chat_id}, {"$set": {"ai_active": False, "handled_by": "human",
+                              "status": "waiting", "waiting": True, "handoff_reason": body.reason}, "$push": {"messages": sys_msg}})
+    await log_audit("You", "handoff", "chat", chat_id, {"reason": body.reason})
+    return await db.chats.find_one({"id": chat_id}, PROJ)
+
+
+@api_router.post("/chats/{chat_id}/resume-ai")
+async def resume_ai(chat_id: str):
+    sys_msg = {"id": new_id(), "author_type": "system", "author_name": "System",
+               "body": "Fayr Assistant (AI) resumed handling this chat.", "created_at": now_iso()}
+    await db.chats.update_one({"id": chat_id}, {"$set": {"ai_active": True, "handled_by": "ai", "status": "active", "waiting": False, "handoff_reason": None}, "$push": {"messages": sys_msg}})
+    return await db.chats.find_one({"id": chat_id}, PROJ)
+
+
+@api_router.post("/tickets/{ticket_id}/ai-process")
+async def ai_process_ticket(ticket_id: str):
+    ticket = await db.tickets.find_one({"id": ticket_id})
+    if not ticket:
+        raise HTTPException(404, "Ticket not found")
+    data = await ai_email_reply(ticket)
+    mode = "sent" if data.get("auto_send") else "draft"
+    if mode == "sent":
+        msg = {"id": new_id(), "author_type": "agent", "author_name": "Fayr Assistant (AI)",
+               "body": data.get("message", ""), "created_at": now_iso(), "ai": True}
+        upd = {"$push": {"messages": msg}, "$set": {"updated_at": now_iso(), "ai_handled": True, "ai_draft": None}}
+        if ticket.get("status") == "open":
+            upd["$set"]["status"] = "pending"
+        await db.tickets.update_one({"id": ticket_id}, upd)
+    else:
+        await db.tickets.update_one({"id": ticket_id}, {"$set": {"ai_draft": data.get("message", ""), "ai_handled": False}})
+    await log_audit("Fayr Assistant (AI)", "ai_" + mode, "ticket", ticket_id, {"confidence": data.get("confidence")})
+    updated = await db.tickets.find_one({"id": ticket_id}, PROJ)
+    return {"mode": mode, "confidence": data.get("confidence"), "canned_used": data.get("canned_used", ""),
+            "draft": data.get("message", ""), "ticket": updated}
+
+
+# ----- Knowledge Base CRUD -----
+@api_router.get("/kb-articles")
+async def list_kb():
+    return await db.kb_articles.find({}, PROJ).sort("updated_at", -1).to_list(200)
+
+
+@api_router.post("/kb-articles")
+async def create_kb(body: KBIn):
+    doc = {"id": new_id(), "source": "manual", "updated_at": now_iso(), **body.model_dump()}
+    await db.kb_articles.insert_one(dict(doc))
+    await log_audit("You", "create", "kb_article", doc["id"], {"title": body.title})
+    return await db.kb_articles.find_one({"id": doc["id"]}, PROJ)
+
+
+@api_router.patch("/kb-articles/{aid}")
+async def update_kb(aid: str, body: KBIn):
+    await db.kb_articles.update_one({"id": aid}, {"$set": {**body.model_dump(), "updated_at": now_iso()}})
+    await log_audit("You", "update", "kb_article", aid, {"title": body.title})
+    return await db.kb_articles.find_one({"id": aid}, PROJ)
+
+
+@api_router.delete("/kb-articles/{aid}")
+async def delete_kb(aid: str):
+    await db.kb_articles.delete_one({"id": aid})
+    return {"deleted": True}
+
+
+# ----- Canned Responses CRUD -----
+@api_router.get("/canned-responses")
+async def list_canned():
+    return await db.canned_responses.find({}, PROJ).sort("usage_count", -1).to_list(200)
+
+
+@api_router.post("/canned-responses")
+async def create_canned(body: CannedIn):
+    doc = {"id": new_id(), "usage_count": 0, "updated_at": now_iso(), **body.model_dump()}
+    await db.canned_responses.insert_one(dict(doc))
+    await log_audit("You", "create", "canned_response", doc["id"], {"title": body.title})
+    return await db.canned_responses.find_one({"id": doc["id"]}, PROJ)
+
+
+@api_router.patch("/canned-responses/{cid}")
+async def update_canned(cid: str, body: CannedIn):
+    await db.canned_responses.update_one({"id": cid}, {"$set": {**body.model_dump(), "updated_at": now_iso()}})
+    await log_audit("You", "update", "canned_response", cid, {"title": body.title})
+    return await db.canned_responses.find_one({"id": cid}, PROJ)
+
+
+@api_router.delete("/canned-responses/{cid}")
+async def delete_canned(cid: str):
+    await db.canned_responses.delete_one({"id": cid})
+    return {"deleted": True}
+
+
+# ----- Training Insights -----
+@api_router.get("/ai/training-insights")
+async def training_insights():
+    examples = await db.ai_examples.find({}, PROJ).sort("created_at", -1).to_list(1000)
+    kb_count = await db.kb_articles.count_documents({})
+    canned_count = await db.canned_responses.count_documents({})
+    freq = {}
+    for e in examples:
+        for w in re.findall(r"[a-zA-Z]+", (e.get("user_question") or "").lower()):
+            if len(w) < 3 or w in STOPWORDS:
+                continue
+            freq[w] = freq.get(w, 0) + 1
+    top = sorted(freq.items(), key=lambda x: -x[1])[:12]
+    by_channel = {}
+    for e in examples:
+        ch = e.get("channel", "other")
+        by_channel[ch] = by_channel.get(ch, 0) + 1
+    ai_started = await db.chats.count_documents({"$or": [{"handled_by": "ai"}, {"handoff_reason": {"$ne": None}}]})
+    handoffs = await db.chats.count_documents({"handoff_reason": {"$nin": [None, ""]}})
+    resolved_by_ai = max(ai_started - handoffs, 0)
+    canned = await db.canned_responses.find({}, PROJ).sort("usage_count", -1).to_list(10)
+    return {
+        "examples_count": len(examples),
+        "kb_count": kb_count,
+        "canned_count": canned_count,
+        "top_keywords": [{"word": w, "count": c} for w, c in top],
+        "by_channel": by_channel,
+        "recent_examples": examples[:8],
+        "ai_chats": ai_started,
+        "handoffs": handoffs,
+        "resolved_by_ai": resolved_by_ai,
+        "top_canned": [{"title": c["title"], "usage_count": c.get("usage_count", 0)} for c in canned],
+    }
 
 
 app.include_router(api_router)

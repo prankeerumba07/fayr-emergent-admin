@@ -9,6 +9,7 @@ import Operations from "@/pages/Operations";
 import FrontendOps from "@/pages/FrontendOps";
 import Finance from "@/pages/Finance";
 import Admin from "@/pages/Admin";
+import AiAssistant from "@/pages/AiAssistant";
 
 function App() {
   return (
@@ -20,7 +21,8 @@ function App() {
             <Topbar />
             <main className="min-h-0 flex-1 overflow-hidden">
               <Routes>
-                <Route path="/" element={<Navigate to="/support" replace />} />
+                <Route path="/" element={<Navigate to="/assistant" replace />} />
+                <Route path="/assistant" element={<AiAssistant />} />
                 <Route path="/support" element={<CustomerSupport />} />
                 <Route path="/operations" element={<Operations />} />
                 <Route path="/frontend-ops" element={<FrontendOps />} />

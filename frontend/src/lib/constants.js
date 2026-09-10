@@ -1,4 +1,6 @@
-import { Headphones, ShieldCheck, LayoutGrid, CreditCard, Settings2 } from "lucide-react";
+import { Headphones, ShieldCheck, LayoutGrid, CreditCard, Settings2, Bot } from "lucide-react";
+
+export const AI_NAV = { key: "ai", label: "Fayr Assistant", icon: Bot, path: "/assistant" };
 
 export const TEAMS = [
   { key: "customer_support", label: "Customer Support", short: "Support", icon: Headphones, path: "/support" },

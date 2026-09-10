@@ -1,168 +1,67 @@
 {
-  "project_name": "Fayr Admin Panel - Omnichannel SaaS Ops & Customer Experience Desk",
-  "app_type": "dashboard (internal admin / SaaS ops panel)",
-  "theme": "Light theme, modern SaaS Freshdesk DEW-inspired professional aesthetic",
-  "design_archetype": "Soft Utility & Precision Command Center",
-  "typography": {
-    "font_family_heading": "Plus Jakarta Sans, Manrope, sans-serif",
-    "font_family_body": "Inter, system-ui, sans-serif",
-    "font_family_mono": "JetBrains Mono, Roboto Mono, monospace",
-    "scale": {
-      "h1": "text-2xl sm:text-3xl font-bold tracking-tight text-slate-900",
-      "h2": "text-xl sm:text-2xl font-semibold tracking-tight text-slate-900",
-      "h3": "text-lg font-semibold text-slate-800",
-      "h4": "text-base font-medium text-slate-800",
-      "body": "text-sm text-slate-600 leading-relaxed",
-      "caption": "text-xs font-medium text-slate-500 tracking-wide"
-    }
-  },
+  "theme": "Light",
+  "archetype": "ARCHETYPE 1: ORGANIC & EARTHY mixed with SWISS HIGH-CONTRAST (Light, Airy, Tech-Forward)",
+  "design_direction": "Must look distinctly different from Freshdesk/Freshchat. Airy, modern, zero dark bloat, cardless or ultra-soft borderless sections, glass-misming ambient light, high micro-interaction fluidity, and high-visibility AI indicators.",
   "colors": {
-    "background": "#F8FAFC",
-    "surface": "#FFFFFF",
-    "surface_secondary": "#F1F5F9",
-    "border": "#E2E8F0",
-    "primary": "#1E293B",
-    "primary_hover": "#0F172A",
-    "accent_blue": "#2563EB",
-    "accent_blue_light": "#EFF6FF",
-    "brand_emerald": "#059669",
-    "brand_emerald_light": "#ECFDF5",
-    "warning_amber": "#D97706",
-    "warning_amber_light": "#FFFBEB",
-    "danger_rose": "#E11D48",
-    "danger_rose_light": "#FFF1F2",
-    "text_dark": "#0F172A",
-    "text_muted": "#64748B",
-    "text_light": "#94A3B8",
-    "forbidden_colors": ["#1B93A4", "#7351B7"]
+    "background": "hsl(210, 40%, 98%)",
+    "surface_card": "#FFFFFF",
+    "surface_subtle": "#F4F7FA",
+    "primary": "#0F172A",
+    "primary_light": "#1E293B",
+    "accent_indigo": "#4F46E5",
+    "accent_violet": "#7C3AED",
+    "accent_emerald": "#059669",
+    "accent_amber": "#D97706",
+    "accent_rose": "#E11D48",
+    "border_subtle": "rgba(226, 232, 240, 0.8)",
+    "glass_bg": "rgba(255, 255, 255, 0.75)",
+    "glass_border": "rgba(255, 255, 255, 0.4)",
+    "text_primary": "#0F172A",
+    "text_muted": "#64748B"
   },
-  "marketplaces": [
-    { "name": "Amazon", "badge_bg": "bg-amber-100 text-amber-900 border-amber-300" },
-    { "name": "Flipkart", "badge_bg": "bg-blue-100 text-blue-900 border-blue-300" },
-    { "name": "Meesho", "badge_bg": "bg-pink-100 text-pink-900 border-pink-300" },
-    { "name": "Myntra", "badge_bg": "bg-purple-100 text-purple-900 border-purple-300" }
-  ],
-  "layout_structure": {
-    "sidebar": "Fixed left navigation (64px collapsed / 240px expanded) with team switchers, presence badge, unread counters, and dark navy or clean slate border.",
-    "header": "Top action bar with team scope selector, global search (CMD+K), quick agent status toggle (Online/Away/Offline), AI Assist trigger, and quick stats pill.",
-    "main_content": "Multi-pane responsive grid. For Inboxes: 3-column split layout (Column 1: Ticket/Chat List with search & filters, Column 2: Threaded Conversation & Reply Box, Column 3: Customer Context, AI Reply Assist & Ticket Properties).",
-    "density": "High density data layout with crisp 1px borders, subtle hover effects, tight padding (p-3 to p-5 for lists, p-6 for workspace containers)."
+  "typography": {
+    "font_headings": "Plus Jakarta Sans, sans-serif",
+    "font_body": "Inter, system-ui, sans-serif",
+    "font_mono": "JetBrains Mono, monospace",
+    "h1_hero": "text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight",
+    "h2_section": "text-2xl sm:text-3xl font-bold tracking-tight",
+    "h3_card": "text-lg sm:text-xl font-semibold tracking-tight",
+    "body": "text-sm sm:text-base leading-relaxed"
   },
-  "teams_and_sections": [
-    {
-      "key": "customer_support",
-      "label": "Customer Support",
-      "icon": "Headphones",
-      "views": ["Shared Team Inbox", "Ticket Detail & Composer", "Live Chat Console", "SLA & Response Metrics"]
-    },
-    {
-      "key": "operations",
-      "label": "Operations",
-      "icon": "ShieldCheck",
-      "views": ["Review Verification Queue", "OCR Proof Inspection", "Listing Visibility Check", "Seller Compliance"]
-    },
-    {
-      "key": "frontend_ops",
-      "label": "Frontend Operations",
-      "icon": "LayoutGrid",
-      "views": ["App Campaign Banners", "Offer Reward Rules", "Marketplace Catalog Mapping", "User UX Issues"]
-    },
-    {
-      "key": "finance",
-      "label": "Finance",
-      "icon": "CreditCard",
-      "views": ["Payout & Refund Approvals", "User Wallet Ledger", "Bank UPI Verification", "Disbursement Analytics"]
-    },
-    {
-      "key": "admin",
-      "label": "Admin / Management",
-      "icon": "Settings2",
-      "views": ["Staff & Agent Routing", "Team Capacity & Performance", "SLA Configuration", "Audit Logs"]
+  "grids_and_layout": {
+    "spacing": "Generous spacing. p-6, p-8, p-12 with max-w-7xl containers.",
+    "sidebar": "Slim floating navigational pillar with backdrop-blur-xl bg-white/80 border-r border-slate-200/60",
+    "bento_insights": "Asymmetric Bento Grid (grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-6) for Training Insights & AI Metrics",
+    "live_chat_layout": "3-Column Fluid Canvas: [Customer Simulator & Context] | [Fayr Assistant Live AI Stream & Agent Takeover] | [Continuous Learning & Memory Inspector]"
+  },
+  "component_path": "/app/frontend/src",
+  "media": {
+    "image_urls": {
+      "agent_avatars": [
+        "https://images.unsplash.com/photo-1681164315669-e351ae412094?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzV8MHwxfHNlYXJjaHw0fHxpbmRpYW4lMjBjdXN0b21lciUyMHN1cHBvcnQlMjBhdmF0YXIlMjBwb3J0cmFpdCUyMHByb2Zlc3Npb25hbHxlbnwwfHx8fDE3ODkwMjIxMTR8MA&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1752861653044-b1abf5848bc0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzV8MHwxfHNlYXJjaHwzfHxpbmRpYW4lMjBjdXN0b21lciUyMHN1cHBvcnQlMjBhdmF0YXIlMjBwb3J0cmFpdCUyMHByb2Zlc3Npb25hbHxlbnwwfHx8fDE3ODkwMjIxMTR8MA&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1541657333963-d31b55f58de1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHw0fHxpbmRpYW4lMjB3b21hbiUyMHNtaWxpbmclMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3ODkwMjIxMTd8MA&ixlib=rb-4.1.0&q=85"
+      ],
+      "ecommerce_logos": [
+        "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?crop=entropy&cs=srgb&fm=jpg&w=400&q=80",
+        "https://images.unsplash.com/photo-1556742049-0a67f572b931?crop=entropy&cs=srgb&fm=jpg&w=400&q=80"
+      ]
     }
-  ],
-  "key_features_to_build": {
-    "shared_inbox": {
-      "description": "Email-to-ticket list with priority tags (Urgent, High, Medium, Low), SLA countdown timers, Marketplace badge (Amazon, Flipkart, Meesho, Myntra), assignees, and quick status filters (Open, Pending, Escalated, Resolved).",
-      "data_testids": ["ticket-list-item", "ticket-filter-status", "ticket-search-input", "ticket-priority-badge"]
-    },
-    "ticket_detail_composer": {
-      "description": "Chronological email/chat thread. Multi-channel editor with tabs for 'Reply to Customer' vs 'Internal Note' (yellow background tint). Includes rich text controls, template canned responses, attachment upload, and send button.",
-      "data_testids": ["reply-composer-textarea", "reply-mode-tab-reply", "reply-mode-tab-note", "send-reply-btn"]
-    },
-    "agent_assignment_and_transfer": {
-      "description": "Agent dropdown with live availability indicators. 'Reassign / Transfer Ticket' modal with optional note for target agent or team escalation.",
-      "data_testids": ["agent-assignment-select", "transfer-ticket-button", "confirm-transfer-btn"]
-    },
-    "live_chat_inbox": {
-      "description": "Real-time feel chat sidebar with typing indicator, active session timers, customer sentiment badge (Positive, Neutral, Frustrated), and quick transfer control.",
-      "data_testids": ["chat-item", "chat-message-input", "chat-send-btn", "chat-transfer-btn"]
-    },
-    "agent_presence_routing": {
-      "description": "Status toggle in header (Available - Online, Away - Lunch/Break, Busy - On Call, Offline) with real-time routing status badge.",
-      "data_testids": ["agent-presence-status-toggle", "agent-presence-indicator"]
-    },
-    "ai_assist_panel": {
-      "description": "Side drawer/panel providing 1-click AI Reply Suggestions (Polite Refund Approval, Escalation Notice, Review Guidelines Check), AI Chat Summary bullet points, and Customer Sentiment Tagging.",
-      "data_testids": ["ai-reply-suggestion-card", "ai-apply-suggestion-btn", "ai-chat-summary-box"]
-    },
-    "operations_ocr_queue": {
-      "description": "Claims review table displaying user-submitted marketplace invoice/screenshot OCR output against marketplace purchase verification. Approve/Reject buttons with reason selector.",
-      "data_testids": ["ocr-claim-row", "approve-claim-btn", "reject-claim-btn", "ocr-image-preview"]
-    },
-    "finance_approval_ledger": {
-      "description": "Refund/Withdrawal request queue with UPI ID verification, user total claim count, balance audit, ledger table, and batch disbursement actions.",
-      "data_testids": ["finance-withdrawal-row", "approve-payout-btn", "view-user-ledger-btn"]
-    },
-    "admin_management_overview": {
-      "description": "Staff directory grid, active agent shift timer, auto-assignment queue rules, SLA breach warning triggers, and team productivity charts.",
-      "data_testids": ["staff-member-card", "reassign-role-select", "sla-config-input"]
-    }
-  },
-  "image_urls": {
-    "avatars": [
-      {
-        "name": "Ananya Sharma (Customer Support Lead)",
-        "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBhdmF0YXIlMjBoZWFkc2hvdCUyMGNvcnBvcmF0ZXxlbnwwfHx8fDE3ODkwMjAyMTh8MA&ixlib=rb-4.1.0&q=85"
-      },
-      {
-        "name": "Rahul Verma (Ops Specialist)",
-        "url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBhdmF0YXIlMjBoZWFkc2hvdCUyMGNvcnBvcmF0ZXxlbnwwfHx8fDE3ODkwMjAyMTh8MA&ixlib=rb-4.1.0&q=85"
-      },
-      {
-        "name": "Priya Nair (Finance Manager)",
-        "url": "https://images.unsplash.com/photo-1607746882042-944635dfe10e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBhdmF0YXIlMjBoZWFkc2hvdCUyMGNvcnBvcmF0ZXxlbnwwfHx8fDE3ODkwMjAyMTh8MA&ixlib=rb-4.1.0&q=85"
-      },
-      {
-        "name": "Vikram Malhotra (Admin / Lead)",
-        "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBhdmF0YXIlMjBoZWFkc2hvdCUyMGNvcnBvcmF0ZXxlbnwwfHx8fDE3ODkwMjAyMTh8MA&ixlib=rb-4.1.0&q=85"
-      }
-    ]
   },
   "instructions_to_main_agent": [
-    "Build a rich, interactive, realistic single-page application dashboard for Fayr Admin Panel in JavaScript (.jsx/.js files).",
-    "Implement the 5 team sections accessible via the left sidebar: Customer Support, Operations, Frontend Operations, Finance, and Admin/Management.",
-    "Include a unified top status bar with real-time agent presence toggle (Online, Away, Busy, Offline), global metric pills, and CMD+K search trigger.",
-    "For Customer Support: provide both Shared Team Inbox (threaded email tickets with reply/internal note composer, AI suggestions, ticket re-assignment) AND Live Chat Console (real-time chat list, typing indicator, transfer flow).",
-    "For Operations: provide OCR Evidence & Review Proof Verification queue with image proof preview modal, Amazon/Flipkart/Meesho/Myntra product link checker, and approve/reject claims.",
-    "For Finance: provide Wallet Refund & Cash Withdrawal approvals with user transaction ledger view, UPI status, and batch approval trigger.",
-    "For Admin/Management: provide Team & Staff roster, live workload meters, SLA response configuration, and role permission modifiers.",
-    "Ensure all interactive elements have explicit data-testid attributes (e.g. data-testid='ticket-list-item').",
-    "Use Framer Motion for smooth tab switches, modal slide-ins, and drawer expansions.",
-    "Use Sonner for toasts when tickets are assigned, status updated, or claims approved/rejected.",
-    "Do NOT use pure #000000 or forbidden teal #1B93A4. Maintain crisp Slate/Blue/Emerald palette with subtle shadows and border-slate-200."
+    "Ensure all JS files use modern React functional patterns.",
+    "Do not use dark backgrounds for main containers. Stick to clean light-mode palettes with soft indigo/emerald/amber ambient accents.",
+    "Every key interactive element must have a data-testid attribute in kebab-case format.",
+    "Build the 5 core views: AI Live Chat Console, AI Email Inbox, Knowledge Base Manager, Canned Responses Manager, and Training Insights Dashboard.",
+    "Highlight Claude Sonnet 4.6 as the underlying intelligence engine.",
+    "Ensure the Handoff Banner activates clearly with 3 triggers: user request, low confidence (<70%), or user frustration sentiment.",
+    "Provide live learning indicators showing captured human replies instantly feeding into AI memory."
   ],
   "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
-    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
-    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
-    "Create depth through layered design elements with z-index hierarchy.",
-    "Use glass-morphism effects with backdrop filters (12-24px blur) for floating action panels and modals.",
-    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms.",
-    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file.",
-    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
-    "NEVER use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 for icons. Use Lucide icons (lucide-react) exclusively.",
-    "Every interaction needs micro-animations - hover states, transitions, slide-ins.",
-    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
-    "Prioritize using pre-existing components from src/components/ui when applicable.",
-    "Use Sonner for toasts (located in /app/src/components/ui/sonner.jsx)."
+    "DO NOT use generic centered layouts or heavy dark gradients.",
+    "Use glass-morphism effects with backdrop filters (backdrop-blur-md) for floating headers, tooltips, and status banners.",
+    "You MUST NOT apply universal transition: all. Specify precise transition parameters (e.g. transition: opacity 0.2s ease, transform 0.2s ease).",
+    "Never center align main page containers (.App { text-align: center }). Keep standard left/grid alignments.",
+    "Include data-testid on buttons, inputs, links, tabs, badges, and modals."
   ]
 }

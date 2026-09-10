@@ -1,7 +1,7 @@
-# Fayr Admin Panel — PRD
+## Fayr Admin Panel — PRD
 
 ## Original Problem Statement
-Build an internal Admin Panel for **Fayr** (a standalone incentivized review & refund platform for Indian e-commerce marketplaces: Amazon, Flipkart, Meesho, Myntra). The panel must have separate sections per internal team and take inspiration from Freshdesk/Freshchat for how users connect, how emails reach agents, how chats arrive and get assigned/transferred, and escalation when an agent is unavailable. The user's existing panel looked too basic and needed a strong redesign.
+Build an internal Admin Panel for **Fayr** (incentivized review & refund platform for Indian e-commerce: Amazon, Flipkart, Meesho, Myntra) with per-team sections, Freshdesk/Freshchat-inspired support, and (v2) an **autonomous AI support agent** that answers chats & emails, learns from every agent reply, and hands off to humans when needed.
 
 ## Architecture
 - **Frontend:** React 19 (CRA/CRACO), TailwindCSS, shadcn/ui, Framer Motion, Recharts, Sonner, lucide-react. Multi-pane SaaS dashboard, light theme (Plus Jakarta Sans / Inter / JetBrains Mono).
@@ -31,3 +31,13 @@ Build an internal Admin Panel for **Fayr** (a standalone incentivized review & r
 
 ## Next Tasks
 - Await user feedback on look & flows; wire real channels or auth if requested.
+
+## v2 — Fayr Assistant (Agentic AI) — 2026-06
+- New sidebar section **Fayr Assistant** (`/assistant`) with 5 tabs: AI Live Chat, AI Email, Knowledge Base, Canned Responses, Training Insights. Redesigned light/indigo-violet, glassy, airy look distinct from Freshdesk.
+- **Autonomous AI (Claude Sonnet 4.6)**: greets & answers human-like (time-of-day greetings, varied wording, no over-convincing), returns confidence + sentiment per turn.
+- **Handoff** on: user asks for human, confidence < 45%, or frustration. Manual hand-off, human takeover, and resume-AI supported. Graceful fallback → handoff if LLM unavailable.
+- **AI Email**: auto-sends simple replies, auto-drafts complex ones for agent review & send.
+- **Continuous learning**: every human agent reply + canned response is captured into `ai_examples` and read as context on every conversation; KB & canned are fully editable and apply instantly. KB seeded from CLAUDE.md.
+- **Training Insights**: replies learned, KB/canned counts, AI resolution vs handoff, top question keywords, learning-by-channel, recent learned replies, top canned.
+- Verified: backend 10/10 new AI tests + 19 original pass; frontend all AI flows pass (100%).
+- Backlog: real inbound email/chat channel, staff auth, split server.py into routers (optional).
