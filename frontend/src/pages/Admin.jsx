@@ -15,6 +15,8 @@ const AXIS_TICK_Y = { fontSize: 12, fill: "#94a3b8" };
 const CHART_CURSOR = { fill: "#f1f5f9" };
 const TOOLTIP_STYLE = { borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 };
 
+const CARD_FADE = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 } };
+
 export default function Admin() {
   const { agents } = useApp();
   const [metrics, setMetrics] = useState(null);
@@ -94,7 +96,7 @@ export default function Admin() {
             {agents.map((a, i) => {
               const p = PRESENCE_STYLE[a.presence];
               return (
-                <motion.div key={a.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} data-testid="staff-member-card" className="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+                <motion.div key={a.id} {...CARD_FADE} transition={{ delay: i * 0.03 }} data-testid="staff-member-card" className="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
                   <Avatar src={a.avatar} name={a.name} size={44} presence={a.presence} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-slate-800">{a.name}</p>

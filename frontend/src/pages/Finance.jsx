@@ -42,6 +42,8 @@ function LedgerRow({ e }) {
   );
 }
 
+const ROW_FADE = { initial: { opacity: 0 }, animate: { opacity: 1 } };
+
 export default function Finance() {
   const { agents } = useApp();
   const [rows, setRows] = useState([]);
@@ -111,7 +113,7 @@ export default function Finance() {
               </thead>
               <tbody>
                 {rows.map((w) => (
-                  <motion.tr key={w.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} data-testid="finance-withdrawal-row" className="border-b border-slate-100 hover:bg-slate-50/60">
+                  <motion.tr key={w.id} {...ROW_FADE} data-testid="finance-withdrawal-row" className="border-b border-slate-100 hover:bg-slate-50/60">
                     <td className="px-4 py-3">
                       <p className="font-medium text-slate-800">{w.user_name}</p>
                       <p className="text-xs text-slate-500">{w.user_mobile}</p>

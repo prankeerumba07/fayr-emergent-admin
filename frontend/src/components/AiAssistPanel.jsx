@@ -5,6 +5,9 @@ import { Sparkles, Loader2, ClipboardCheck, ListChecks, X } from "lucide-react";
 import { SentimentBadge } from "@/components/shared/UI";
 import { toast } from "sonner";
 
+const COLLAPSE = { initial: { opacity: 0, height: 0 }, animate: { opacity: 1, height: "auto" }, exit: { opacity: 0, height: 0 } };
+const FADE_UP = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 } };
+
 export default function AiAssistPanel({ ticketId, chatId, onApply }) {
   const [suggestions, setSuggestions] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -64,9 +67,7 @@ export default function AiAssistPanel({ ticketId, chatId, onApply }) {
       <AnimatePresence>
         {summary && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            {...COLLAPSE}
             className="overflow-hidden rounded-xl border border-blue-100 bg-blue-50/50 p-3"
             data-testid="ai-chat-summary-box"
           >
@@ -94,8 +95,7 @@ export default function AiAssistPanel({ ticketId, chatId, onApply }) {
         {suggestions.map((s, i) => (
           <motion.div
             key={`sug-${i}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+            {...FADE_UP}
             transition={{ delay: i * 0.06 }}
             className="rounded-xl border border-slate-200 bg-white p-3"
             data-testid="ai-reply-suggestion-card"

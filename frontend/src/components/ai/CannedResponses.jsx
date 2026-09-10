@@ -10,6 +10,8 @@ const CATS = ["Refunds", "Verification", "Payments", "Rewards", "Technical", "Ge
 const CHANNELS = ["both", "email", "chat"];
 const empty = { title: "", category: "General", channel: "both", body: "" };
 
+const CARD_FADE = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 } };
+
 export default function CannedResponses() {
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
@@ -44,7 +46,7 @@ export default function CannedResponses() {
         {items.length === 0 && <EmptyState icon={MessageSquareQuote} title="No canned responses" subtitle="Add some for the AI to reuse." />}
         <div className="space-y-3">
           {items.map((c, i) => (
-            <motion.div key={c.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} data-testid="canned-row" className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+            <motion.div key={c.id} {...CARD_FADE} transition={{ delay: i * 0.03 }} data-testid="canned-row" className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
               <div className="min-w-0 flex-1">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
                   <h3 className="text-sm font-semibold text-slate-900">{c.title}</h3>

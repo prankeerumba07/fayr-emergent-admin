@@ -16,6 +16,8 @@ const VIS_STYLE = {
   failed: "border-rose-200 bg-rose-50 text-rose-700",
 };
 
+const ROW_FADE = { initial: { opacity: 0 }, animate: { opacity: 1 } };
+
 export default function Operations() {
   const { agents } = useApp();
   const [claims, setClaims] = useState([]);
@@ -87,7 +89,7 @@ export default function Operations() {
               </thead>
               <tbody>
                 {claims.map((c) => (
-                  <motion.tr key={c.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} data-testid="ocr-claim-row" className="border-b border-slate-100 hover:bg-slate-50/60">
+                  <motion.tr key={c.id} {...ROW_FADE} data-testid="ocr-claim-row" className="border-b border-slate-100 hover:bg-slate-50/60">
                     <td className="px-4 py-3">
                       <p className="font-medium text-slate-800">{c.user_name}</p>
                       <p className="max-w-[220px] truncate text-xs text-slate-500">{c.product_title}</p>

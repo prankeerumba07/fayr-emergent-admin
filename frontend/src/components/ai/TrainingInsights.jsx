@@ -12,6 +12,8 @@ const KW_TICK = { fontSize: 12, fill: "#64748b" };
 const CHART_CURSOR = { fill: "#f1f5f9" };
 const TOOLTIP_STYLE = { borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 };
 
+const ROW_FADE = { initial: { opacity: 0, x: -8 }, animate: { opacity: 1, x: 0 } };
+
 export default function TrainingInsights() {
   const [d, setD] = useState(null);
   useEffect(() => { api.getTrainingInsights().then(({ data }) => setD(data)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -83,7 +85,7 @@ export default function TrainingInsights() {
             <p className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-slate-800"><GraduationCap size={15} className="text-indigo-500" /> Recently learned agent replies</p>
             <div className="space-y-3">
               {d.recent_examples.map((e, i) => (
-                <motion.div key={`${e.channel}-${e.user_question}-${i}`} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }} data-testid="learned-example-row" className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+                <motion.div key={`${e.channel}-${e.user_question}-${i}`} {...ROW_FADE} transition={{ delay: i * 0.04 }} data-testid="learned-example-row" className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
                   <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500">{e.channel === "email" ? <Mail size={12} /> : <MessageSquare size={12} />} User asked: <span className="text-slate-700">“{e.user_question}”</span></p>
                   <p className="mt-1 text-xs leading-relaxed text-slate-600"><span className="font-medium text-indigo-600">Learned reply:</span> {e.agent_reply}</p>
                 </motion.div>

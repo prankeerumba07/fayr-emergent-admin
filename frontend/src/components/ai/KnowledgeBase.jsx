@@ -22,6 +22,8 @@ const CAT_COLOR = {
 
 const empty = { title: "", category: "General", content: "" };
 
+const CARD_FADE = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
+
 export default function KnowledgeBase() {
   const [articles, setArticles] = useState([]);
   const [open, setOpen] = useState(false);
@@ -56,7 +58,7 @@ export default function KnowledgeBase() {
         {articles.length === 0 && <EmptyState icon={FileText} title="No articles yet" subtitle="Add knowledge so the AI can answer accurately." />}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {articles.map((a, i) => (
-            <motion.div key={a.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} data-testid="kb-article-card" className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+            <motion.div key={a.id} {...CARD_FADE} transition={{ delay: i * 0.03 }} data-testid="kb-article-card" className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <Pill className={CAT_COLOR[a.category] || CAT_COLOR.General}>{a.category}</Pill>
                 <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">

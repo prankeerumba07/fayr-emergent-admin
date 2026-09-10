@@ -17,6 +17,8 @@ const UX_STATUS = {
   resolved: "border-emerald-200 bg-emerald-50 text-emerald-700",
 };
 
+const CARD_FADE = { initial: { opacity: 0, x: -8 }, animate: { opacity: 1, x: 0 } };
+
 export default function FrontendOps() {
   const [banners, setBanners] = useState([]);
   const [rules, setRules] = useState([]);
@@ -55,7 +57,7 @@ export default function FrontendOps() {
             <div className="flex items-center gap-2 border-b border-slate-200 p-4"><Image size={16} className="text-slate-500" /><p className="text-sm font-semibold text-slate-800">Campaign Banners</p></div>
             <div className="divide-y divide-slate-100">
               {banners.map((b, i) => (
-                <motion.div key={b.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} data-testid="banner-row" className="p-4">
+                <motion.div key={b.id} {...CARD_FADE} transition={{ delay: i * 0.05 }} data-testid="banner-row" className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium text-slate-800">{b.title}</p>
