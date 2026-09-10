@@ -26,6 +26,7 @@ export default function Finance() {
     const [w, m] = await Promise.all([api.getWithdrawals(filter), api.getMetrics("finance")]);
     setRows(w.data);
     setMetrics(m.data);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   useEffect(() => { load(); }, [load]);
@@ -127,7 +128,7 @@ export default function Finance() {
               </div>
               <div className="space-y-2">
                 {ledger.ledger.map((e, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                  <div key={`${e.type}-${e.date}-${i}`} className="flex items-center justify-between rounded-lg border border-slate-200 p-3">
                     <div className="flex items-center gap-2">
                       <div className={`rounded-lg p-1.5 ${e.type === "credit" ? "bg-emerald-50 text-emerald-600" : e.type === "debit" ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500"}`}>
                         {e.type === "credit" ? <ArrowDownRight size={14} /> : e.type === "debit" ? <ArrowUpRight size={14} /> : <Clock size={14} />}

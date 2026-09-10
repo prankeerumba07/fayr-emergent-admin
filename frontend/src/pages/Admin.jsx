@@ -60,7 +60,7 @@ export default function Admin() {
                   <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={{ fill: "#f1f5f9" }} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
                   <Bar dataKey="agents" radius={[8, 8, 0, 0]} name="Staff">
-                    {teamCounts.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    {teamCounts.map((e, i) => <Cell key={e.name} fill={COLORS[i % COLORS.length]} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

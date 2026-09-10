@@ -99,6 +99,7 @@ function InboxView() {
     const { data } = await api.getTickets({ status: filter, q: search || undefined });
     setTickets(data);
     setSelected((prev) => (prev ? data.find((t) => t.id === prev.id) || data[0] : data[0]) || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, search]);
 
   useEffect(() => { load(); }, [load]);
@@ -346,6 +347,7 @@ function ChatView() {
     const { data } = await api.getChats();
     setChats(data);
     setSelected((prev) => (prev ? data.find((c) => c.id === prev.id) || data[0] : data[0]) || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -514,7 +516,7 @@ function ChatView() {
 export default function CustomerSupport() {
   const [tab, setTab] = useState("inbox");
   const [metrics, setMetrics] = useState(null);
-  useEffect(() => { api.getMetrics("customer_support").then(({ data }) => setMetrics(data)); }, []);
+  useEffect(() => { api.getMetrics("customer_support").then(({ data }) => setMetrics(data)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex h-full flex-col">

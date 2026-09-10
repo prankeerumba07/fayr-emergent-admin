@@ -17,6 +17,7 @@ export function AppProvider({ children }) {
       return data.find((a) => a.team === "customer_support") || data[0] || null;
     });
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

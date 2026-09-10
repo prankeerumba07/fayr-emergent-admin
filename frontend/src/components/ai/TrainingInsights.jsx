@@ -46,7 +46,7 @@ export default function TrainingInsights() {
                     <XAxis type="number" hide />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} width={90} />
                     <Tooltip cursor={{ fill: "#f1f5f9" }} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
-                    <Bar dataKey="value" radius={[0, 8, 8, 0]}>{kw.map((e, i) => <Cell key={i} fill={KW_COLORS[i % KW_COLORS.length]} />)}</Bar>
+                    <Bar dataKey="value" radius={[0, 8, 8, 0]}>{kw.map((e, i) => <Cell key={e.name} fill={KW_COLORS[i % KW_COLORS.length]} />)}</Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : <p className="pt-16 text-center text-sm text-slate-400">No questions learned yet.</p>}
@@ -60,7 +60,7 @@ export default function TrainingInsights() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={donut} dataKey="value" innerRadius={44} outerRadius={64} paddingAngle={3} stroke="none">
-                      {donut.map((e, i) => <Cell key={i} fill={e.color} />)}
+                      {donut.map((e) => <Cell key={e.name} fill={e.color} />)}
                     </Pie>
                     <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
                   </PieChart>
@@ -79,7 +79,7 @@ export default function TrainingInsights() {
             <p className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-slate-800"><GraduationCap size={15} className="text-indigo-500" /> Recently learned agent replies</p>
             <div className="space-y-3">
               {d.recent_examples.map((e, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }} data-testid="learned-example-row" className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+                <motion.div key={`${e.channel}-${e.user_question}-${i}`} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }} data-testid="learned-example-row" className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
                   <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500">{e.channel === "email" ? <Mail size={12} /> : <MessageSquare size={12} />} User asked: <span className="text-slate-700">“{e.user_question}”</span></p>
                   <p className="mt-1 text-xs leading-relaxed text-slate-600"><span className="font-medium text-indigo-600">Learned reply:</span> {e.agent_reply}</p>
                 </motion.div>
@@ -91,8 +91,8 @@ export default function TrainingInsights() {
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-5">
             <p className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-slate-800"><MessageSquareQuote size={15} className="text-slate-500" /> Most-used canned responses</p>
             <div className="space-y-2">
-              {d.top_canned.map((c, i) => (
-                <div key={i} data-testid="top-canned-row" className="flex items-center justify-between">
+              {d.top_canned.map((c) => (
+                <div key={c.title} data-testid="top-canned-row" className="flex items-center justify-between">
                   <span className="truncate text-xs text-slate-600">{c.title}</span>
                   <div className="flex items-center gap-2">
                     <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100"><div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500" style={{ width: `${Math.min(100, (c.usage_count / (d.top_canned[0]?.usage_count || 1)) * 100)}%` }} /></div>

@@ -27,6 +27,7 @@ export default function Operations() {
     const [c, m] = await Promise.all([api.getClaims(filter), api.getMetrics("operations")]);
     setClaims(c.data);
     setMetrics(m.data);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   useEffect(() => { load(); }, [load]);

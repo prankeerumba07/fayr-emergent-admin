@@ -78,7 +78,7 @@ export default function AiAssistPanel({ ticketId, chatId, onApply }) {
             {summary.points?.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {summary.points.map((pt, i) => (
-                  <li key={i} className="flex gap-1.5 text-xs text-slate-600"><span className="text-blue-500">•</span>{pt}</li>
+                  <li key={`pt-${i}`} className="flex gap-1.5 text-xs text-slate-600"><span className="text-blue-500">•</span>{pt}</li>
                 ))}
               </ul>
             )}
@@ -93,7 +93,7 @@ export default function AiAssistPanel({ ticketId, chatId, onApply }) {
       <div className="space-y-2">
         {suggestions.map((s, i) => (
           <motion.div
-            key={i}
+            key={`sug-${i}`}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}

@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 import uuid
-import random
+import secrets
 import json
 import re
 from pathlib import Path
@@ -34,6 +34,14 @@ def now_iso():
 
 def new_id():
     return str(uuid.uuid4())
+
+
+def rand_int(a, b):
+    return a + secrets.randbelow(b - a + 1)
+
+
+def rand_choice(seq):
+    return secrets.choice(list(seq))
 
 
 PROJ = {"_id": 0}
@@ -208,7 +216,7 @@ async def do_seed(force=False):
 
     agents = []
     for a in AGENTS_SEED:
-        doc = {"id": new_id(), "active_tickets": random.randint(1, 8), **a}
+        doc = {"id": new_id(), "active_tickets": rand_int(1, 8), **a}
         agents.append(doc)
     await db.agents.insert_many([dict(a) for a in agents])
 
@@ -219,10 +227,10 @@ async def do_seed(force=False):
     base = datetime.now(timezone.utc)
     tickets = []
     for i, (subj, name, email, mkt, pri, status, body) in enumerate(TICKET_SEED):
-        created = base - timedelta(hours=random.randint(1, 72))
+        created = base - timedelta(hours=rand_int(1, 72))
         assignee = None
         if status != "open" or i % 3 == 0:
-            assignee = random.choice(cs_agents)["id"]
+            assignee = rand_choice(cs_agents)["id"]
         sla_hours = {"urgent": 2, "high": 8, "medium": 24, "low": 48}[pri]
         tickets.append({
             "id": new_id(),
@@ -230,7 +238,7 @@ async def do_seed(force=False):
             "marketplace": mkt, "priority": pri, "status": status,
             "team": "customer_support", "channel": "email",
             "assignee_id": assignee,
-            "sentiment": random.choice(["positive", "neutral", "frustrated"]),
+            "sentiment": rand_choice(["positive", "neutral", "frustrated"]),
             "sla_due": (created + timedelta(hours=sla_hours)).isoformat(),
             "created_at": created.isoformat(),
             "updated_at": created.isoformat(),
@@ -240,11 +248,11 @@ async def do_seed(force=False):
 
     chats = []
     for name, email, mkt, status, sentiment, msgs in CHAT_SEED:
-        started = base - timedelta(minutes=random.randint(2, 40))
+        started = base - timedelta(minutes=rand_int(2, 40))
         msg_objs = []
         for j, (atype, mbody) in enumerate(msgs):
             msg_objs.append({"id": new_id(), "author_type": atype, "author_name": name if atype == "customer" else "Ananya Sharma", "body": mbody, "created_at": (started + timedelta(minutes=j)).isoformat()})
-        assignee = random.choice(cs_agents)["id"] if status == "active" else None
+        assignee = rand_choice(cs_agents)["id"] if status == "active" else None
         chats.append({
             "id": new_id(), "customer_name": name, "customer_email": email, "marketplace": mkt,
             "status": status, "assignee_id": assignee, "sentiment": sentiment,
@@ -258,7 +266,7 @@ async def do_seed(force=False):
 
     claims = []
     for name, mob, mkt, prod, oid, amt, conf, vis in CLAIM_SEED:
-        created = base - timedelta(hours=random.randint(1, 96))
+        created = base - timedelta(hours=rand_int(1, 96))
         claims.append({
             "id": new_id(), "user_name": name, "user_mobile": mob, "marketplace": mkt,
             "product_title": prod, "order_id": oid, "claim_amount": amt,
@@ -266,14 +274,14 @@ async def do_seed(force=False):
             "ocr_text": f"Order {oid}\n{prod}\nTotal: ₹{amt}.00\nDelivered\nReturn window: 7 days",
             "screenshot_url": "",
             "status": "pending" if vis != "failed" else "pending",
-            "assignee_id": random.choice(ops_agents)["id"] if ops_agents else None,
+            "assignee_id": rand_choice(ops_agents)["id"] if ops_agents else None,
             "created_at": created.isoformat(),
         })
     await db.claims.insert_many([dict(c) for c in claims])
 
     withdrawals = []
     for name, mob, upi, amt, tcount, bal in WITHDRAWAL_SEED:
-        created = base - timedelta(hours=random.randint(1, 60))
+        created = base - timedelta(hours=rand_int(1, 60))
         ledger = [
             {"type": "credit", "amount": amt, "balance": bal, "note": "Refund reward credited", "date": (created - timedelta(days=2)).isoformat()},
             {"type": "hold", "amount": 0, "balance": bal, "note": "Withdrawal requested", "date": created.isoformat()},
@@ -281,7 +289,7 @@ async def do_seed(force=False):
         withdrawals.append({
             "id": new_id(), "user_name": name, "user_mobile": mob, "upi_id": upi,
             "amount": amt, "tickets_count": tcount, "wallet_balance": bal,
-            "upi_status": random.choice(["verified", "pending"]),
+            "upi_status": rand_choice(["verified", "pending"]),
             "status": "pending", "assignee_id": fin_agents[0]["id"] if fin_agents else None,
             "created_at": created.isoformat(), "ledger": ledger,
         })
@@ -311,7 +319,7 @@ async def do_seed(force=False):
         ("App crash / bug", "Technical", "both", "Sorry you hit a glitch! Could you tell me your app version and phone model? As a quick fix, clearing the app cache and retrying the upload resolves this for most users while our team pushes a fix."),
     ]
     await db.canned_responses.insert_many([
-        {"id": new_id(), "title": t, "category": cat, "channel": ch, "body": b, "usage_count": random.randint(3, 40), "updated_at": now_iso()}
+        {"id": new_id(), "title": t, "category": cat, "channel": ch, "body": b, "usage_count": rand_int(3, 40), "updated_at": now_iso()}
         for (t, cat, ch, b) in canned_seed
     ])
 
@@ -829,13 +837,15 @@ async def ai_chat_reply(chat):
     prompt = (
         "Current time of day in India: " + greeting_for_now() + ".\n"
         "Conversation so far:\n" + history + "\n\n"
-        "Write the best next reply as Fayr Assistant. If it is just a greeting, greet warmly using the time of day and "
-        "ask how you can help (do not repeat a greeting you already used). Set needs_handoff to true ONLY if: the user "
+        "Write the best next reply as Fayr Assistant. If it is just a greeting, thanks, or small talk, greet warmly using "
+        "the time of day and ask how you can help (do not repeat a greeting you already used) \u2014 this is always something "
+        "you can handle, so set needs_handoff=false and confidence to at least 0.9. Set needs_handoff to true ONLY if: the user "
         "asks for a human/real agent, you are genuinely not confident you can resolve their issue, or the user is clearly "
         "frustrated or angry. When handing off, your message should reassure them you're connecting them to a teammate.\n\n"
         "Respond ONLY with a JSON object with keys: message (string), needs_handoff (boolean), "
         "handoff_reason (string, empty if none), confidence (number 0 to 1), sentiment (positive, neutral, or frustrated)."
     )
+    text = ""
     try:
         text = await run_llm(system, prompt)
     except Exception as e:
@@ -859,6 +869,7 @@ async def ai_email_reply(ticket):
         "Respond ONLY with a JSON object with keys: message (string, the full email reply), auto_send (boolean), "
         "confidence (number 0 to 1), canned_used (string title or empty), category (string)."
     )
+    text = ""
     try:
         text = await run_llm(system, prompt)
     except Exception as e:

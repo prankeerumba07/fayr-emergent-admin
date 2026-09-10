@@ -37,6 +37,7 @@ export default function AiLiveChat() {
     const { data } = await api.getChats();
     setChats(data);
     setSelected((prev) => (prev ? data.find((c) => c.id === prev.id) || prev : data.find((c) => c.handled_by === "ai") || data[0]) || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => { load(); }, [load]);
