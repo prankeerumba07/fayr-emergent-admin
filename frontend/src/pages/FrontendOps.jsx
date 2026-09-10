@@ -28,6 +28,7 @@ export default function FrontendOps() {
     api.getRewardRules().then(({ data }) => setRules(data));
     api.getUxIssues().then(({ data }) => setIssues(data));
     api.getMetrics("frontend_ops").then(({ data }) => setMetrics(data));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

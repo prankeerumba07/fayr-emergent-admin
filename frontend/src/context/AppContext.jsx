@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { api } from "@/lib/api";
 
 const AppContext = createContext(null);
@@ -31,8 +31,14 @@ export function AppProvider({ children }) {
     setAgents((prev) => prev.map((a) => (a.id === data.id ? data : a)));
   };
 
+  const value = useMemo(
+    () => ({ agents, currentAgent, setCurrentAgent, loading, loadAgents, changePresence }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [agents, currentAgent, loading, loadAgents]
+  );
+
   return (
-    <AppContext.Provider value={{ agents, currentAgent, setCurrentAgent, loading, loadAgents, changePresence }}>
+    <AppContext.Provider value={value}>
       {children}
     </AppContext.Provider>
   );

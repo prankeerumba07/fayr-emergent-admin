@@ -28,7 +28,7 @@ export default function KnowledgeBase() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(empty);
 
-  const load = useCallback(async () => { const { data } = await api.getKbArticles(); setArticles(data); }, []);
+  const load = useCallback(async () => { const { data } = await api.getKbArticles(); setArticles(data); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [load]);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };

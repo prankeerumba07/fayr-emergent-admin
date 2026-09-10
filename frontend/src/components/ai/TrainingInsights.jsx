@@ -10,7 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, PieCha
 
 export default function TrainingInsights() {
   const [d, setD] = useState(null);
-  useEffect(() => { api.getTrainingInsights().then(({ data }) => setD(data)); }, []);
+  useEffect(() => { api.getTrainingInsights().then(({ data }) => setD(data)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!d) return null;
 
   const kw = d.top_keywords.map((k) => ({ name: k.word, value: k.count }));

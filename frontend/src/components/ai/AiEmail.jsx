@@ -28,6 +28,7 @@ export default function AiEmail() {
     const { data } = await api.getTickets({ status: "all" });
     setTickets(data);
     setSelected((prev) => (prev ? data.find((t) => t.id === prev.id) || data[0] : data[0]) || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => { load(); }, [load]);

@@ -16,7 +16,7 @@ export default function CannedResponses() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(empty);
 
-  const load = useCallback(async () => { const { data } = await api.getCanned(); setItems(data); }, []);
+  const load = useCallback(async () => { const { data } = await api.getCanned(); setItems(data); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [load]);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };

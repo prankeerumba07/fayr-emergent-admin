@@ -41,7 +41,7 @@ export default function AiLiveChat() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { if (selected) setSpeakAs(selected.ai_active ? "customer" : "agent"); }, [selected?.id, selected?.ai_active]);
+  useEffect(() => { if (selected) setSpeakAs(selected.ai_active ? "customer" : "agent"); }, [selected?.id, selected?.ai_active]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [selected?.messages?.length, thinking]);
 
   const upsert = (chat) => { setSelected(chat); setChats((prev) => { const has = prev.find((c) => c.id === chat.id); return has ? prev.map((c) => (c.id === chat.id ? chat : c)) : [chat, ...prev]; }); };

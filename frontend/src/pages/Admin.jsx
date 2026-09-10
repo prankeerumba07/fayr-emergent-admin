@@ -10,6 +10,10 @@ import {
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 
 const TEAM_LABEL = Object.fromEntries(TEAMS.map((t) => [t.key, t.short]));
+const AXIS_TICK_X = { fontSize: 12, fill: "#64748b" };
+const AXIS_TICK_Y = { fontSize: 12, fill: "#94a3b8" };
+const CHART_CURSOR = { fill: "#f1f5f9" };
+const TOOLTIP_STYLE = { borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 };
 
 export default function Admin() {
   const { agents } = useApp();
@@ -56,9 +60,9 @@ export default function Admin() {
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={teamCounts} barCategoryGap={24}>
-                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: "#f1f5f9" }} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
+                  <XAxis dataKey="name" tick={AXIS_TICK_X} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={AXIS_TICK_Y} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={CHART_CURSOR} contentStyle={TOOLTIP_STYLE} />
                   <Bar dataKey="agents" radius={[8, 8, 0, 0]} name="Staff">
                     {teamCounts.map((e, i) => <Cell key={e.name} fill={COLORS[i % COLORS.length]} />)}
                   </Bar>

@@ -60,10 +60,13 @@ export const Avatar = ({ src, name, size = 36, presence }) => {
   );
 };
 
+const CARD_INIT = { opacity: 0, y: 12 };
+const CARD_ANIM = { opacity: 1, y: 0 };
+
 export const StatCard = ({ icon: Icon, label, value, sub, accent = "text-slate-900", tone = "bg-slate-100 text-slate-600", index = 0 }) => (
   <motion.div
-    initial={{ opacity: 0, y: 12 }}
-    animate={{ opacity: 1, y: 0 }}
+    initial={CARD_INIT}
+    animate={CARD_ANIM}
     transition={{ duration: 0.35, delay: index * 0.05 }}
     className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
     data-testid="stat-card"
