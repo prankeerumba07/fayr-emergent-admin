@@ -8,6 +8,10 @@ import {
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, PieChart, Pie } from "recharts";
 
+const KW_TICK = { fontSize: 12, fill: "#64748b" };
+const CHART_CURSOR = { fill: "#f1f5f9" };
+const TOOLTIP_STYLE = { borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 };
+
 export default function TrainingInsights() {
   const [d, setD] = useState(null);
   useEffect(() => { api.getTrainingInsights().then(({ data }) => setD(data)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -44,8 +48,8 @@ export default function TrainingInsights() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={kw} layout="vertical" margin={{ left: 10 }}>
                     <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} width={90} />
-                    <Tooltip cursor={{ fill: "#f1f5f9" }} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
+                    <YAxis type="category" dataKey="name" tick={KW_TICK} axisLine={false} tickLine={false} width={90} />
+                    <Tooltip cursor={CHART_CURSOR} contentStyle={TOOLTIP_STYLE} />
                     <Bar dataKey="value" radius={[0, 8, 8, 0]}>{kw.map((e, i) => <Cell key={e.name} fill={KW_COLORS[i % KW_COLORS.length]} />)}</Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -62,7 +66,7 @@ export default function TrainingInsights() {
                     <Pie data={donut} dataKey="value" innerRadius={44} outerRadius={64} paddingAngle={3} stroke="none">
                       {donut.map((e) => <Cell key={e.name} fill={e.color} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
