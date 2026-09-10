@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const MKTS = ["Amazon", "Flipkart", "Meesho", "Myntra"];
 const QUICK = ["hello", "when will I get my refund?", "my withdrawal failed", "I want to talk to a human agent", "this is ridiculous, my refund is stuck!!"];
+const THINKING_MOTION = { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0 } };
+const DOT_ANIM = { opacity: [0.3, 1, 0.3] };
 
 function confTone(c) {
   if (c == null) return { c: "text-slate-500", bar: "bg-slate-300" };
@@ -184,9 +186,9 @@ export default function AiLiveChat() {
               })}
               <AnimatePresence>
                 {thinking && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex justify-end">
+                  <motion.div {...THINKING_MOTION} className="flex justify-end">
                     <div className="flex items-center gap-1.5 rounded-2xl rounded-tr-sm bg-gradient-to-br from-indigo-600 to-violet-600 px-4 py-3 shadow-md">
-                      {[0, 1, 2].map((i) => <motion.span key={i} className="h-2 w-2 rounded-full bg-white/80" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />)}
+                      {[0, 1, 2].map((i) => <motion.span key={i} className="h-2 w-2 rounded-full bg-white/80" animate={DOT_ANIM} transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />)}
                     </div>
                   </motion.div>
                 )}
