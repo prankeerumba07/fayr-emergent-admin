@@ -14,6 +14,8 @@ function confTone(c) {
   return "text-rose-600";
 }
 
+const RESULT_MOTION = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
+
 export default function AiEmail() {
   const { currentAgent } = useApp();
   const [tickets, setTickets] = useState([]);
@@ -100,7 +102,7 @@ export default function AiEmail() {
               })}
 
               {result && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} data-testid="ai-email-result" className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm">
+                <motion.div {...RESULT_MOTION} data-testid="ai-email-result" className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm">
                   <div className="mb-2 flex items-center justify-between">
                     <p className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
                       {result.mode === "sent" ? <><Zap size={15} className="text-emerald-600" /> Auto-sent by AI</> : <><PencilLine size={15} className="text-amber-600" /> AI draft — needs your review</>}

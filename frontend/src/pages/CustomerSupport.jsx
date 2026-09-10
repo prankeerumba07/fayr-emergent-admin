@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 
 const TICKET_FILTERS = ["all", "open", "pending", "escalated", "resolved"];
+const FADE_MOTION = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.2 } };
 
 function TransferDialog({ open, onOpenChange, agents, onConfirm, kind = "ticket" }) {
   const [agentId, setAgentId] = useState("");
@@ -546,7 +547,7 @@ export default function CustomerSupport() {
       </div>
       <div className="min-h-0 flex-1">
         <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="h-full">
+          <motion.div key={tab} {...FADE_MOTION} className="h-full">
             {tab === "inbox" ? <InboxView /> : <ChatView />}
           </motion.div>
         </AnimatePresence>

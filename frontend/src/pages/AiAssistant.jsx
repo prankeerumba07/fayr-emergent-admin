@@ -7,6 +7,9 @@ import KnowledgeBase from "@/components/ai/KnowledgeBase";
 import CannedResponses from "@/components/ai/CannedResponses";
 import TrainingInsights from "@/components/ai/TrainingInsights";
 
+const TAB_MOTION = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0 }, transition: { duration: 0.2 } };
+const PILL_SPRING = { type: "spring", stiffness: 400, damping: 32 };
+
 const TABS = [
   { key: "chat", label: "AI Live Chat", icon: MessageSquare, C: AiLiveChat },
   { key: "email", label: "AI Email", icon: Mail, C: AiEmail },
@@ -46,7 +49,7 @@ export default function AiAssistant() {
                   onClick={() => setTab(t.key)}
                   className={`relative inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${active ? "text-white" : "text-slate-600 hover:text-slate-900"}`}
                 >
-                  {active && <motion.span layoutId="ai-tab-pill" className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600" transition={{ type: "spring", stiffness: 400, damping: 32 }} />}
+                  {active && <motion.span layoutId="ai-tab-pill" className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600" transition={PILL_SPRING} />}
                   <Icon size={15} /> {t.label}
                 </button>
               );
@@ -57,7 +60,7 @@ export default function AiAssistant() {
 
       <div className="min-h-0 flex-1 bg-slate-50/60">
         <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="h-full">
+          <motion.div key={tab} {...TAB_MOTION} className="h-full">
             <Active />
           </motion.div>
         </AnimatePresence>
