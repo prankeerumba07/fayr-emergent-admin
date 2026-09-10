@@ -1,0 +1,38 @@
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { api } from "@/lib/api";
+
+const AppContext = createContext(null);
+export const useApp = () => useContext(AppContext);
+
+export function AppProvider({ children }) {
+  const [agents, setAgents] = useState([]);
+  const [currentAgent, setCurrentAgent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadAgents = useCallback(async () => {
+    const { data } = await api.getAgents();
+    setAgents(data);
+    setCurrentAgent((prev) => {
+      if (prev) return data.find((a) => a.id === prev.id) || prev;
+      return data.find((a) => a.team === "customer_support") || data[0] || null;
+    });
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadAgents();
+  }, [loadAgents]);
+
+  const changePresence = async (presence) => {
+    if (!currentAgent) return;
+    const { data } = await api.setPresence(currentAgent.id, presence);
+    setCurrentAgent(data);
+    setAgents((prev) => prev.map((a) => (a.id === data.id ? data : a)));
+  };
+
+  return (
+    <AppContext.Provider value={{ agents, currentAgent, setCurrentAgent, loading, loadAgents, changePresence }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
