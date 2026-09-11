@@ -650,13 +650,22 @@ async def get_metrics(team: str):
 
 
 # ----- AI -----
-async def run_llm(system: str, prompt: str) -> str:
+CLAUDE_MODELS = [
+    "claude-sonnet-4-6",
+    "claude-sonnet-5",
+    "claude-opus-4-7",
+    "claude-haiku-4-5-20251001",
+]
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
+
+
+async def run_llm(system: str, prompt: str, model: str = None) -> str:
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     chat = LlmChat(
         api_key=os.environ["EMERGENT_LLM_KEY"],
         session_id=new_id(),
         system_message=system,
-    ).with_model("anthropic", "claude-sonnet-4-6")
+    ).with_model("anthropic", model or CLAUDE_MODEL)
     resp = await chat.send_message(UserMessage(text=prompt))
     return resp
 
@@ -1067,6 +1076,11 @@ async def training_insights():
         "resolved_by_ai": resolved_by_ai,
         "top_canned": [{"title": c["title"], "usage_count": c.get("usage_count", 0)} for c in canned],
     }
+
+
+@api_router.get("/ai/config")
+async def ai_config():
+    return {"provider": "anthropic", "active_model": CLAUDE_MODEL, "available_models": CLAUDE_MODELS}
 
 
 app.include_router(api_router)
