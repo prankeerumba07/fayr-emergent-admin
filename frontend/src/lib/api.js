@@ -5,8 +5,18 @@ export const API = `${BACKEND_URL}/api`;
 
 const client = axios.create({ baseURL: API });
 
+client.interceptors.request.use((config) => {
+  const t = localStorage.getItem("fayr_token");
+  if (t) config.headers.Authorization = `Bearer ${t}`;
+  return config;
+});
+
 export const api = {
   seed: () => client.post("/seed"),
+  login: (email, password) => client.post("/auth/login", { email, password }),
+  register: (payload) => client.post("/auth/register", payload),
+  authMe: () => client.get("/auth/me"),
+  authLogout: () => client.post("/auth/logout"),
   // agents
   getAgents: (team) => client.get("/agents", { params: team ? { team } : {} }),
   setPresence: (id, presence) => client.patch(`/agents/${id}/presence`, { presence }),

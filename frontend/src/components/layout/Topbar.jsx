@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { Avatar } from "@/components/shared/UI";
 import { PRESENCE_STYLE } from "@/lib/constants";
-import { Search, ChevronDown, Command } from "lucide-react";
+import { Search, ChevronDown, Command, LogOut } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -11,6 +12,7 @@ const PRESENCE_OPTIONS = ["online", "away", "busy", "offline"];
 
 export default function Topbar() {
   const { currentAgent, agents, setCurrentAgent, changePresence } = useApp();
+  const { logout } = useAuth();
   const [query, setQuery] = useState("");
   if (!currentAgent) return <div className="h-[65px] border-b border-slate-200 bg-white" />;
   const p = PRESENCE_STYLE[currentAgent.presence];
@@ -77,6 +79,10 @@ export default function Topbar() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <button data-testid="logout-btn" onClick={logout} title="Log out" className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600">
+          <LogOut size={14} /> Logout
+        </button>
       </div>
     </header>
   );

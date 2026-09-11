@@ -1,0 +1,41 @@
+{
+  "summary": "End-to-end JWT auth verification. Backend: 7/8 auth tests pass (login success, login wrong-pw 401, /auth/me with Bearer, /auth/me no-token 401, /auth/me invalid-token 401, all protected endpoints work with Bearer). Frontend: 100% pass — Login screen gates panel, wrong password shows login-error, correct credentials store 237-char token in localStorage 'fayr_token' and load the Shell, sidebar shows all sections (Fayr Assistant, Customer Support, Operations, Finance, Admin), session persists across reload via /auth/me, all pages (assistant/support/operations/finance/frontend-ops/admin) load without any /api error responses (Bearer attached by axios interceptor), logout-btn clears token and returns to Login. ONE backend regression: brute-force lockout (429 after 5 fails) DOES NOT trigger in the deployed environment.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/auth/login", "issue": "Brute-force lockout never fires. RCA: identifier is built as f\"{request.client.host}:{email}\" but requests behind the Kubernetes ingress arrive from multiple upstream proxy IPs (observed 10.79.142.2 and 10.79.142.5 in login_attempts collection); counter is split across proxy IPs and never reaches 5 for the same identifier. Sent 7 wrong-pw requests in a row → all returned 401, none 429. Fix: parse X-Forwarded-For / trust proxy header (e.g. request.headers.get('x-forwarded-for','').split(',')[0].strip() or request.headers.get('x-real-ip')) with a safe fallback to request.client.host, OR key the counter on email alone (with per-email rate limit).", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "POST /api/auth/login (record_fail)", "issue": "locked_until is $set on every failed attempt rather than only when count crosses the 5 threshold; the 15-minute clock effectively resets on each fail. Works only because check_lockout also requires count>=5, but the intent-vs-implementation drift is worth cleaning up."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin (Metrics charts)", "issues": ["Recharts warning: 'The width(-1) and height(-1) of chart should be greater than 0' — chart container renders with no size on first paint; add minHeight to ResponsiveContainer parent."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_auth.py",
+    "/app/test_reports/pytest/auth_results.xml"
+  ],
+  "action_items": [
+    "Fix brute-force lockout: derive real client IP from X-Forwarded-For (Kubernetes ingress puts real client behind multiple proxy hops so request.client.host varies). Alternatively rate-limit by email only.",
+    "Optional: set locked_until only when count reaches 5, not on every failed attempt.",
+    "Optional: fix ResponsiveContainer sizing on Admin metrics to avoid recharts width/height=-1 warnings."
+  ],
+  "critical_code_review_comments": [
+    "AuthContext uses null/false/user tri-state correctly — Gate() renders loader while checking; on 401 from /auth/me it removes token and shows Login (good).",
+    "Axios interceptor in src/lib/api.js attaches Bearer from localStorage on every request — confirmed all 6 pages call /api with Authorization header, no 401s.",
+    "Server issues both Bearer JWT and httpOnly cookies (set_auth_cookies) — the frontend intentionally uses Bearer/localStorage; that's consistent. get_current_user accepts either.",
+    "Bug: brute-force identifier depends on request.client.host which is not the true client IP behind ingress; must read X-Forwarded-For."
+  ],
+  "updated_files": ["/app/backend/tests/test_auth.py"],
+  "success_rate": {"backend": "87.5% (7/8 auth tests)", "frontend": "100% (login, wrong-pw error, token storage, reload persistence, all pages, logout)"},
+  "test_credentials": "Admin: prakash.tamang@cashkaro.com / Fayr@Admin2026 — verified working. Support: support@fayr.in / Support@2026 — seeded (not exercised in this run).",
+  "seed_data_creation": "None (used existing seed_auth). Test created transient bruteforce-* and bftest-* entries in login_attempts.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Auth flow is fully wired frontend-to-backend via Bearer JWT in localStorage 'fayr_token'. Only outstanding auth bug is brute-force lockout not firing due to ingress-proxy IP variance — reproduce by hitting /api/auth/login with wrong password 6+ times and inspecting db.login_attempts (identifier will show multiple proxy IPs like 10.79.142.x). After main agent fixes IP extraction, re-run /app/backend/tests/test_auth.py::test_brute_force_lockout.",
+  "rca of the issue": "Brute-force lockout RCA: server.py `login()` builds identifier = f\"{request.client.host}:{email}\". In this Kubernetes/ingress environment, `request.client.host` sees the immediate hop (varies between 10.79.142.2 and 10.79.142.5 — verified in login_attempts collection). Because the identifier changes per request, the 5-strike counter is fragmented and never reaches the threshold in check_lockout. Reproduction: `for i in 1..7; curl -X POST /api/auth/login -d '{\"email\":\"x@x\",\"password\":\"w\"}'` → all 401, none 429. Mitigation: use `request.headers.get('x-forwarded-for', request.client.host).split(',')[0].strip()` when building identifier."
+}
