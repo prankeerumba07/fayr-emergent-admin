@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { StatCard, Avatar, Pill } from "@/components/shared/UI";
+import StaffManager from "@/components/admin/StaffManager";
 import { PRESENCE_STYLE, TEAMS, timeAgo } from "@/lib/constants";
 import {
   Settings2, Users, UserCheck, Activity, History, TicketCheck, Gauge,
@@ -117,6 +118,8 @@ export default function Admin() {
             })}
           </div>
         </div>
+
+        <StaffManager />
       </div>
     </div>
   );

@@ -2,6 +2,38 @@ import { Headphones, ShieldCheck, LayoutGrid, CreditCard, Settings2, Bot } from 
 
 export const AI_NAV = { key: "ai", label: "Fayr Assistant", icon: Bot, path: "/assistant" };
 
+// Which sections each role can access. admin sees everything.
+export const ROLE_SECTIONS = {
+  admin: ["ai", "customer_support", "operations", "frontend_ops", "finance", "admin"],
+  support: ["ai", "customer_support"],
+  operations: ["operations"],
+  frontend_ops: ["frontend_ops"],
+  finance: ["finance"],
+  agent: [],
+};
+
+const SECTION_PATH = {
+  ai: "/assistant",
+  customer_support: "/support",
+  operations: "/operations",
+  frontend_ops: "/frontend-ops",
+  finance: "/finance",
+  admin: "/admin",
+};
+
+export function allowedSections(role) {
+  return ROLE_SECTIONS[role] || [];
+}
+
+export function canAccessSection(role, key) {
+  return allowedSections(role).includes(key);
+}
+
+export function defaultPathForRole(role) {
+  const secs = allowedSections(role);
+  return secs.length ? SECTION_PATH[secs[0]] : "/no-access";
+}
+
 export const TEAMS = [
   { key: "customer_support", label: "Customer Support", short: "Support", icon: Headphones, path: "/support" },
   { key: "operations", label: "Operations", short: "Ops", icon: ShieldCheck, path: "/operations" },

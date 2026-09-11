@@ -58,6 +58,14 @@ export const api = {
   chatHandoff: (id, reason) => client.post(`/chats/${id}/handoff`, { reason }),
   resumeAi: (id) => client.post(`/chats/${id}/resume-ai`),
   aiProcessTicket: (id) => client.post(`/tickets/${id}/ai-process`),
+  // staff management (admin)
+  getStaff: () => client.get("/staff"),
+  createStaff: (payload) => client.post("/staff", payload),
+  updateStaff: (id, payload) => client.patch(`/staff/${id}`, payload),
+  deleteStaff: (id) => client.delete(`/staff/${id}`),
+  // password reset
+  forgotPassword: (email) => client.post("/auth/forgot-password", { email }),
+  resetPassword: (token, new_password) => client.post("/auth/reset-password", { token, new_password }),
   // knowledge base
   getKbArticles: () => client.get("/kb-articles"),
   createKb: (payload) => client.post("/kb-articles", payload),

@@ -94,6 +94,10 @@ export default function Login() {
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Sign in
           </button>
+
+          <a href="/forgot-password" data-testid="forgot-password-link" className="block text-center text-xs font-medium text-indigo-600 hover:text-indigo-700">
+            Forgot your password?
+          </a>
         </form>
 
         <p className="mt-6 text-center text-[11px] text-slate-400">Secure JWT session · access is audited</p>

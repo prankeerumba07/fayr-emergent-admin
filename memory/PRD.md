@@ -32,6 +32,14 @@ Build an internal Admin Panel for **Fayr** (incentivized review & refund platfor
 ## Next Tasks
 - Await user feedback on look & flows; wire real channels or auth if requested.
 
+## Team, Access & Recovery — 2026-06 (iteration 5)
+Four features added, all verified 100% (backend 13/13 pytest + full frontend flows — `/app/test_reports/iteration_5.json`):
+- **Department Permissions:** role→section access enforced server-side via `authorize_request` + `section_for_path` (mounted on `api_router`) and mirrored on the frontend (`ROLE_SECTIONS`, filtered Sidebar, role-gated routes, `NoAccess` page). Map: admin→all; support→Fayr Assistant + Customer Support; operations→Operations; frontend_ops→Frontend Ops; finance→Finance; agent→none. Disallowed routes redirect to the role's default section.
+- **Staff Management:** admin-only `/api/staff` CRUD + `StaffManager` UI on Admin page (add teammate w/ temp password + department, inline role change, delete with confirm). Guards: unique email, min 8-char password, cannot delete self or last admin, cannot demote last admin.
+- **Password Reset:** public `/api/auth/forgot-password` (generic response, no enumeration) emails a 1-hour secure link via **Emergent-managed Resend** (`email_service.py`, verified 202 from proxy); `/api/auth/reset-password` validates token+expiry. Public frontend routes `/forgot-password` & `/reset-password`, plus a "Forgot password?" link on Login. `password_reset_tokens` has a TTL index.
+- **AI Rate Limit:** `enforce_ai_limit` dependency caps AI-calling endpoints at 50/user/day (`AI_DAILY_LIMIT`), tracked atomically in `ai_usage`, returns 429 when exceeded.
+- New envs: `EMERGENT_EMAIL_KEY`, `EMAIL_FROM_NAME`, `FRONTEND_URL`, `AI_DAILY_LIMIT`.
+
 ## Security Hardening — 2026-06 (Security Audit remediation)
 Full-app security audit run; all Critical/High/Medium findings fixed and verified via curl:
 - **SEC-001 (CRITICAL) fixed:** All business/finance/admin/AI routes now require a valid JWT. `api_router` mounted with `dependencies=[Depends(get_current_user)]`; only `/`, `/auth/login`, `/auth/refresh` are public (`public_router`). Auth helpers relocated to top of `server.py`.

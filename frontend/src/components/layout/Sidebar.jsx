@@ -1,10 +1,15 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import { TEAMS, AI_NAV } from "@/lib/constants";
+import { TEAMS, AI_NAV, canAccessSection } from "@/lib/constants";
+import { useAuth } from "@/context/AuthContext";
 import { Sparkles } from "lucide-react";
 
 export default function Sidebar() {
+  const { user } = useAuth();
+  const role = user?.role;
+  const showAi = canAccessSection(role, AI_NAV.key);
+  const teams = TEAMS.filter((t) => canAccessSection(role, t.key));
   return (
     <aside className="flex w-[248px] shrink-0 flex-col border-r border-slate-200 bg-white" data-testid="sidebar">
       <div className="flex items-center gap-3 px-6 py-6">
@@ -18,31 +23,37 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-2">
-        <p className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">AI</p>
-        <NavLink
-          to={AI_NAV.path}
-          data-testid="nav-ai"
-          className={({ isActive }) =>
-            `group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-              isActive ? "text-white" : "text-indigo-700 hover:bg-indigo-50"
-            }`
-          }
-        >
-          {({ isActive }) => (
-            <>
-              {isActive && (
-                <motion.span layoutId="active-pill" className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+        {showAi && (
+          <>
+            <p className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">AI</p>
+            <NavLink
+              to={AI_NAV.path}
+              data-testid="nav-ai"
+              className={({ isActive }) =>
+                `group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                  isActive ? "text-white" : "text-indigo-700 hover:bg-indigo-50"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.span layoutId="active-pill" className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+                  )}
+                  {!isActive && <span className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-50 to-violet-50" />}
+                  <AI_NAV.icon size={18} className={isActive ? "text-white" : "text-indigo-600"} />
+                  <span>{AI_NAV.label}</span>
+                  <span className={`ml-auto rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${isActive ? "bg-white/20 text-white" : "bg-indigo-600 text-white"}`}>New</span>
+                </>
               )}
-              {!isActive && <span className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-50 to-violet-50" />}
-              <AI_NAV.icon size={18} className={isActive ? "text-white" : "text-indigo-600"} />
-              <span>{AI_NAV.label}</span>
-              <span className={`ml-auto rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${isActive ? "bg-white/20 text-white" : "bg-indigo-600 text-white"}`}>New</span>
-            </>
-          )}
-        </NavLink>
+            </NavLink>
+          </>
+        )}
 
-        <p className="px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Teams</p>
-        {TEAMS.map((t) => {
+        {teams.length > 0 && (
+          <p className="px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Teams</p>
+        )}
+        {teams.map((t) => {
           const Icon = t.icon;
           return (
             <NavLink

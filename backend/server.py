@@ -20,6 +20,10 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
+from email_service import send_password_reset_email
+
 app = FastAPI(title="Fayr Admin API")
 api_router = APIRouter(prefix="/api")
 public_router = APIRouter(prefix="/api")
@@ -124,6 +128,82 @@ async def get_current_user(request: Request) -> dict:
 async def require_admin(user: dict = Depends(get_current_user)) -> dict:
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+
+# ---- Role-based section access ----
+from pymongo import ReturnDocument
+
+SECTION_ROLES = {
+    "support": {"support"},
+    "operations": {"operations"},
+    "frontend_ops": {"frontend_ops"},
+    "finance": {"finance"},
+    "ai": {"support"},
+    "admin": set(),      # admin only (admin short-circuits earlier)
+    "shared": None,      # any authenticated user
+}
+
+
+def section_for_path(path: str) -> str:
+    parts = [p for p in path.split("/") if p]  # e.g. ['api', 'tickets', '123']
+    if len(parts) < 2:
+        return "shared"
+    seg = parts[1]
+    if seg == "tickets":
+        if len(parts) >= 4 and parts[3] == "ai-process":
+            return "ai"
+        return "support"
+    if seg == "chats":
+        if len(parts) >= 3 and parts[2] == "start":
+            return "ai"
+        if len(parts) >= 4 and parts[3] in ("customer-message", "handoff", "resume-ai"):
+            return "ai"
+        return "support"
+    if seg == "claims":
+        return "operations"
+    if seg == "withdrawals":
+        return "finance"
+    if seg in ("banners", "reward-rules", "ux-issues"):
+        return "frontend_ops"
+    if seg in ("kb-articles", "canned-responses"):
+        return "ai"
+    if seg == "ai":
+        sub = parts[2] if len(parts) >= 3 else ""
+        if sub in ("training-insights", "config"):
+            return "ai"
+        return "support"
+    if seg in ("audit-logs", "seed", "staff"):
+        return "admin"
+    return "shared"
+
+
+async def authorize_request(request: Request, user: dict = Depends(get_current_user)) -> dict:
+    role = user.get("role")
+    if role == "admin":
+        return user
+    allowed = SECTION_ROLES.get(section_for_path(request.url.path))
+    if allowed is None:
+        return user
+    if role in allowed:
+        return user
+    raise HTTPException(status_code=403, detail="Your role does not have access to this section")
+
+
+# ---- AI usage cap (per user, per day) ----
+AI_DAILY_LIMIT = int(os.environ.get("AI_DAILY_LIMIT", "50"))
+
+
+async def enforce_ai_limit(user: dict = Depends(get_current_user)) -> dict:
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    key = f"{user['id']}:{today}"
+    rec = await db.ai_usage.find_one_and_update(
+        {"key": key},
+        {"$inc": {"count": 1}, "$setOnInsert": {"user_id": user["id"], "date": today}},
+        upsert=True, return_document=ReturnDocument.AFTER,
+    )
+    if rec.get("count", 0) > AI_DAILY_LIMIT:
+        raise HTTPException(status_code=429, detail=f"Daily AI limit of {AI_DAILY_LIMIT} requests reached. Please try again tomorrow.")
     return user
 
 
@@ -769,7 +849,7 @@ async def run_llm(system: str, prompt: str, model: str = None) -> str:
     return resp
 
 
-@api_router.post("/ai/reply-suggestions")
+@api_router.post("/ai/reply-suggestions", dependencies=[Depends(enforce_ai_limit)])
 async def ai_reply_suggestions(body: AiReplyIn):
     convo = ""
     subject = ""
@@ -801,7 +881,7 @@ async def ai_reply_suggestions(body: AiReplyIn):
         raise HTTPException(500, f"AI service error: {str(e)}")
 
 
-@api_router.post("/ai/chat-summary")
+@api_router.post("/ai/chat-summary", dependencies=[Depends(enforce_ai_limit)])
 async def ai_chat_summary(body: AiSummaryIn):
     convo = ""
     if body.chat_id:
@@ -1012,7 +1092,7 @@ async def _ai_turn(chat_id):
             "sentiment": data.get("sentiment", "neutral"), "message": data.get("message", "")}
 
 
-@api_router.post("/chats/start")
+@api_router.post("/chats/start", dependencies=[Depends(enforce_ai_limit)])
 async def start_chat(body: StartChatIn):
     now = now_iso()
     email = body.customer_email or (body.customer_name.lower().replace(" ", ".") + "@example.com")
@@ -1030,7 +1110,7 @@ async def start_chat(body: StartChatIn):
     return {"chat": updated, "ai": meta}
 
 
-@api_router.post("/chats/{chat_id}/customer-message")
+@api_router.post("/chats/{chat_id}/customer-message", dependencies=[Depends(enforce_ai_limit)])
 async def customer_message(chat_id: str, body: CustomerMsgIn):
     chat = await db.chats.find_one({"id": chat_id})
     if not chat:
@@ -1066,7 +1146,7 @@ async def resume_ai(chat_id: str):
     return await db.chats.find_one({"id": chat_id}, PROJ)
 
 
-@api_router.post("/tickets/{ticket_id}/ai-process")
+@api_router.post("/tickets/{ticket_id}/ai-process", dependencies=[Depends(enforce_ai_limit)])
 async def ai_process_ticket(ticket_id: str):
     ticket = await db.tickets.find_one({"id": ticket_id})
     if not ticket:
@@ -1265,6 +1345,8 @@ async def refresh_token_ep(request: Request, response: Response):
 async def seed_auth():
     await db.users.create_index("email", unique=True)
     await db.login_attempts.create_index("identifier")
+    await db.password_reset_tokens.create_index("expires_at", expireAfterSeconds=0)
+    await db.ai_usage.create_index("key")
     seed_users = [
         (os.environ.get("ADMIN_EMAIL", "admin@fayr.in"), os.environ.get("ADMIN_PASSWORD", "admin123"), "Prakash Tamang", "admin"),
         ("support@fayr.in", "Support@2026", "Ananya Sharma", "support"),
@@ -1279,8 +1361,128 @@ async def seed_auth():
             await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(pwd)}})
 
 
+# ---- Staff Management (admin only) ----
+class StaffIn(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = ""
+    role: str = "agent"
+
+
+class StaffUpdateIn(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    password: Optional[str] = None
+
+
+VALID_ROLES = {"admin", "support", "operations", "frontend_ops", "finance", "agent"}
+
+
+@api_router.get("/staff")
+async def list_staff(admin: dict = Depends(require_admin)):
+    return await db.users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", 1).to_list(500)
+
+
+@api_router.post("/staff")
+async def create_staff(body: StaffIn, admin: dict = Depends(require_admin)):
+    email = body.email.strip().lower()
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(400, "Email already registered")
+    if len(body.password) < 8:
+        raise HTTPException(400, "Password must be at least 8 characters.")
+    role = body.role if body.role in VALID_ROLES else "agent"
+    doc = {"id": new_id(), "email": email, "password_hash": hash_password(body.password),
+           "name": body.name or email.split("@")[0], "role": role, "created_at": now_iso()}
+    await db.users.insert_one(dict(doc))
+    await log_audit(admin["email"], "create_staff", "user", doc["id"], {"role": role})
+    return {"user": public_user(doc)}
+
+
+@api_router.patch("/staff/{uid}")
+async def update_staff(uid: str, body: StaffUpdateIn, admin: dict = Depends(require_admin)):
+    user = await db.users.find_one({"id": uid})
+    if not user:
+        raise HTTPException(404, "User not found")
+    updates = {}
+    if body.name is not None:
+        updates["name"] = body.name
+    if body.role is not None and body.role in VALID_ROLES:
+        if user.get("role") == "admin" and body.role != "admin" and await db.users.count_documents({"role": "admin"}) <= 1:
+            raise HTTPException(400, "Cannot change the role of the last admin.")
+        updates["role"] = body.role
+    if body.password:
+        if len(body.password) < 8:
+            raise HTTPException(400, "Password must be at least 8 characters.")
+        updates["password_hash"] = hash_password(body.password)
+    if updates:
+        await db.users.update_one({"id": uid}, {"$set": updates})
+        await log_audit(admin["email"], "update_staff", "user", uid, {k: v for k, v in updates.items() if k != "password_hash"})
+    fresh = await db.users.find_one({"id": uid}, {"_id": 0, "password_hash": 0})
+    return {"user": fresh}
+
+
+@api_router.delete("/staff/{uid}")
+async def delete_staff(uid: str, admin: dict = Depends(require_admin)):
+    user = await db.users.find_one({"id": uid})
+    if not user:
+        raise HTTPException(404, "User not found")
+    if user["id"] == admin["id"]:
+        raise HTTPException(400, "You cannot delete your own account.")
+    if user.get("role") == "admin" and await db.users.count_documents({"role": "admin"}) <= 1:
+        raise HTTPException(400, "Cannot delete the last admin.")
+    await db.users.delete_one({"id": uid})
+    await log_audit(admin["email"], "delete_staff", "user", uid, {})
+    return {"ok": True}
+
+
+# ---- Password reset (public) ----
+class ForgotIn(BaseModel):
+    email: str
+
+
+class ResetIn(BaseModel):
+    token: str
+    new_password: str
+
+
+@public_router.post("/auth/forgot-password")
+async def forgot_password(body: ForgotIn):
+    email = body.email.strip().lower()
+    user = await db.users.find_one({"email": email})
+    if user:
+        token = secrets.token_urlsafe(32)
+        await db.password_reset_tokens.insert_one({
+            "token": token, "user_id": user["id"], "email": email,
+            "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),
+            "used": False, "created_at": now_iso(),
+        })
+        reset_link = f"{FRONTEND_URL.rstrip('/')}/reset-password?token={token}"
+        try:
+            await send_password_reset_email(email, user.get("name") or email.split("@")[0], reset_link)
+        except Exception as e:
+            logger.error("password reset email failed: " + str(e))
+    return {"ok": True, "message": "If an account exists for that email, a reset link has been sent."}
+
+
+@public_router.post("/auth/reset-password")
+async def reset_password(body: ResetIn):
+    if len(body.new_password) < 8:
+        raise HTTPException(400, "Password must be at least 8 characters.")
+    rec = await db.password_reset_tokens.find_one({"token": body.token})
+    if not rec or rec.get("used"):
+        raise HTTPException(400, "This reset link is invalid or has already been used.")
+    exp = rec["expires_at"]
+    if getattr(exp, "tzinfo", None) is None:
+        exp = exp.replace(tzinfo=timezone.utc)
+    if exp < datetime.now(timezone.utc):
+        raise HTTPException(400, "This reset link has expired. Please request a new one.")
+    await db.users.update_one({"id": rec["user_id"]}, {"$set": {"password_hash": hash_password(body.new_password)}})
+    await db.password_reset_tokens.update_one({"token": body.token}, {"$set": {"used": True}})
+    return {"ok": True, "message": "Your password has been updated. You can now sign in."}
+
+
 app.include_router(public_router)
-app.include_router(api_router, dependencies=[Depends(get_current_user)])
+app.include_router(api_router, dependencies=[Depends(authorize_request)])
 
 app.add_middleware(
     CORSMiddleware,
