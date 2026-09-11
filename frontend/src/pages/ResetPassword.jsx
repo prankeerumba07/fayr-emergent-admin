@@ -14,6 +14,7 @@ function formatApiErrorDetail(detail) {
 export default function ResetPassword() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token") || "";
+  const isInvite = params.get("invite") === "1";
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,8 +52,8 @@ export default function ResetPassword() {
             <Bot size={24} />
           </div>
           <div>
-            <p className="text-lg font-bold tracking-tight text-slate-900">Set a new password</p>
-            <p className="text-xs text-slate-500">Choose a strong password you don’t use elsewhere</p>
+            <p className="text-lg font-bold tracking-tight text-slate-900">{isInvite ? "Activate your account" : "Set a new password"}</p>
+            <p className="text-xs text-slate-500">{isInvite ? "Welcome to Fayr — choose a password to get started" : "Choose a strong password you don’t use elsewhere"}</p>
           </div>
         </div>
 

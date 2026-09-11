@@ -138,3 +138,32 @@ async def send_password_reset_email(to: str, name: str, reset_link: str) -> str 
         f'</td></tr></table></td></tr></table>'
     )
     return await send_email(to=to, subject=subject, html=html)
+
+
+async def send_invite_email(to: str, name: str, role_label: str, invite_link: str) -> str | None:
+    subject = f"You're invited to {EMAIL_FROM_NAME}"
+    html = (
+        f'<table role="presentation" width="100%" style="background:#f1f5f9;padding:32px 0">'
+        f'<tr><td align="center">'
+        f'<table role="presentation" width="480" style="background:#ffffff;border-radius:16px;'
+        f'font-family:Arial,Helvetica,sans-serif;overflow:hidden;border:1px solid #e2e8f0">'
+        f'<tr><td style="background:linear-gradient(90deg,#4f46e5,#7c3aed);padding:24px 32px">'
+        f'<span style="color:#ffffff;font-size:18px;font-weight:bold">{escape(EMAIL_FROM_NAME)}</span></td></tr>'
+        f'<tr><td style="padding:32px">'
+        f'<p style="font-size:15px;color:#0f172a;margin:0 0 12px">Hi {escape(name)},</p>'
+        f'<p style="font-size:14px;color:#334155;line-height:1.6;margin:0 0 20px">'
+        f'You have been invited to join the <strong>{escape(EMAIL_FROM_NAME)}</strong> team as '
+        f'<strong>{escape(role_label)}</strong>. Click the button below to activate your account and '
+        f'choose your own password. This invite expires in 3 days.</p>'
+        f'<p style="margin:0 0 24px"><a href="{escape(invite_link)}" '
+        f'style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;'
+        f'padding:12px 24px;border-radius:10px;font-size:14px;font-weight:bold">Accept invite &amp; set password</a></p>'
+        f'<p style="font-size:12px;color:#64748b;line-height:1.6;margin:0 0 8px">'
+        f'If the button does not work, copy and paste this link into your browser:</p>'
+        f'<p style="font-size:12px;color:#4f46e5;word-break:break-all;margin:0 0 20px">{escape(invite_link)}</p>'
+        f'<p style="font-size:12px;color:#94a3b8;line-height:1.6;margin:0">'
+        f'If you were not expecting this invitation, you can safely ignore this email. '
+        f'{escape(EMAIL_FROM_NAME)} will never ask for your password or card details by email.</p>'
+        f'</td></tr></table></td></tr></table>'
+    )
+    return await send_email(to=to, subject=subject, html=html)

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { UserPlus, Trash2, Loader2, Users2, Shield } from "lucide-react";
+import { UserPlus, Trash2, Loader2, Users2, Shield, Send } from "lucide-react";
 import { Avatar } from "@/components/shared/UI";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger,
@@ -44,6 +44,9 @@ export default function StaffManager() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "support" });
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviting, setInviting] = useState(false);
+  const [inviteForm, setInviteForm] = useState({ name: "", email: "", role: "support" });
 
   const load = () => {
     setLoading(true);
@@ -67,6 +70,20 @@ export default function StaffManager() {
     } catch (err) {
       toast.error(errText(err));
     } finally { setSaving(false); }
+  };
+
+  const invite = async (e) => {
+    e.preventDefault();
+    setInviting(true);
+    try {
+      await api.inviteStaff(inviteForm);
+      toast.success(`Invite emailed to ${inviteForm.email}`);
+      setInviteOpen(false);
+      setInviteForm({ name: "", email: "", role: "support" });
+      load();
+    } catch (err) {
+      toast.error(errText(err));
+    } finally { setInviting(false); }
   };
 
   const changeRole = async (id, role) => {
@@ -93,10 +110,53 @@ export default function StaffManager() {
           <p className="text-sm font-semibold text-slate-800">Team Management</p>
           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">{staff.length}</span>
         </div>
+        <div className="flex items-center gap-2">
+        <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+          <DialogTrigger asChild>
+            <button data-testid="invite-staff-btn" className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-2 text-xs font-semibold text-white transition-transform hover:scale-[1.02]">
+              <Send size={14} /> Invite by email
+            </button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md" data-testid="invite-staff-dialog">
+            <DialogHeader>
+              <DialogTitle>Invite a teammate</DialogTitle>
+              <DialogDescription>They’ll get an email link to set their own password and activate their account.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={invite} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">Full name</label>
+                <input data-testid="invite-name-input" value={inviteForm.name} onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })} placeholder="Ananya Sharma"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">Work email</label>
+                <input data-testid="invite-email-input" type="email" required value={inviteForm.email} onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })} placeholder="teammate@cashkaro.com"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">Department</label>
+                <Select value={inviteForm.role} onValueChange={(v) => setInviteForm({ ...inviteForm, role: v })}>
+                  <SelectTrigger data-testid="invite-role-select" className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ROLE_OPTIONS.map((r) => (
+                      <SelectItem key={r.value} value={r.value} data-testid={`invite-role-option-${r.value}`}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <button data-testid="invite-submit" type="submit" disabled={inviting}
+                  className="flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                  {inviting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} Send invite
+                </button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <button data-testid="add-staff-btn" className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-2 text-xs font-semibold text-white transition-transform hover:scale-[1.02]">
-              <UserPlus size={14} /> Add teammate
+            <button data-testid="add-staff-btn" className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+              <UserPlus size={14} /> Add directly
             </button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md" data-testid="add-staff-dialog">
@@ -141,6 +201,7 @@ export default function StaffManager() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="divide-y divide-slate-100">
@@ -152,6 +213,9 @@ export default function StaffManager() {
               <p className="truncate text-sm font-semibold text-slate-800">{u.name}</p>
               <p className="truncate text-xs text-slate-500">{u.email}</p>
             </div>
+            {u.pending_invite && (
+              <span data-testid={`staff-pending-${u.id}`} className="hidden rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 sm:inline">Invite pending</span>
+            )}
             <span className={`hidden rounded-full border px-2 py-0.5 text-[10px] font-medium sm:inline ${ROLE_BADGE[u.role] || ROLE_BADGE.agent}`}>
               {ROLE_LABEL[u.role] || u.role}
             </span>

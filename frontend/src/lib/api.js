@@ -61,6 +61,7 @@ export const api = {
   // staff management (admin)
   getStaff: () => client.get("/staff"),
   createStaff: (payload) => client.post("/staff", payload),
+  inviteStaff: (payload) => client.post("/staff/invite", payload),
   updateStaff: (id, payload) => client.patch(`/staff/${id}`, payload),
   deleteStaff: (id) => client.delete(`/staff/${id}`),
   // password reset

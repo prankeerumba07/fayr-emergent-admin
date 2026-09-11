@@ -22,7 +22,7 @@ db = client[os.environ['DB_NAME']]
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
-from email_service import send_password_reset_email
+from email_service import send_password_reset_email, send_invite_email
 
 app = FastAPI(title="Fayr Admin API")
 api_router = APIRouter(prefix="/api")
@@ -1376,6 +1376,17 @@ class StaffUpdateIn(BaseModel):
 
 
 VALID_ROLES = {"admin", "support", "operations", "frontend_ops", "finance", "agent"}
+ROLE_LABELS = {
+    "admin": "Admin / Management", "support": "Customer Support",
+    "operations": "Operations", "frontend_ops": "Frontend Ops",
+    "finance": "Finance", "agent": "Agent",
+}
+
+
+class InviteIn(BaseModel):
+    email: str
+    name: Optional[str] = ""
+    role: str = "agent"
 
 
 @api_router.get("/staff")
@@ -1396,6 +1407,32 @@ async def create_staff(body: StaffIn, admin: dict = Depends(require_admin)):
     await db.users.insert_one(dict(doc))
     await log_audit(admin["email"], "create_staff", "user", doc["id"], {"role": role})
     return {"user": public_user(doc)}
+
+
+@api_router.post("/staff/invite")
+async def invite_staff(body: InviteIn, admin: dict = Depends(require_admin)):
+    email = body.email.strip().lower()
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(400, "Email already registered")
+    role = body.role if body.role in VALID_ROLES else "agent"
+    uid = new_id()
+    name = body.name or email.split("@")[0]
+    doc = {"id": uid, "email": email, "password_hash": hash_password(secrets.token_urlsafe(32)),
+           "name": name, "role": role, "created_at": now_iso(), "pending_invite": True}
+    await db.users.insert_one(dict(doc))
+    token = secrets.token_urlsafe(32)
+    await db.password_reset_tokens.insert_one({
+        "token": token, "user_id": uid, "email": email,
+        "expires_at": datetime.now(timezone.utc) + timedelta(hours=72),
+        "used": False, "created_at": now_iso(), "kind": "invite",
+    })
+    invite_link = f"{FRONTEND_URL.rstrip('/')}/reset-password?token={token}&invite=1"
+    try:
+        await send_invite_email(email, name, ROLE_LABELS.get(role, role), invite_link)
+    except Exception as e:
+        logger.error("invite email failed: " + str(e))
+    await log_audit(admin["email"], "invite_staff", "user", uid, {"role": role})
+    return {"user": public_user(doc), "invited": True}
 
 
 @api_router.patch("/staff/{uid}")
@@ -1476,7 +1513,7 @@ async def reset_password(body: ResetIn):
         exp = exp.replace(tzinfo=timezone.utc)
     if exp < datetime.now(timezone.utc):
         raise HTTPException(400, "This reset link has expired. Please request a new one.")
-    await db.users.update_one({"id": rec["user_id"]}, {"$set": {"password_hash": hash_password(body.new_password)}})
+    await db.users.update_one({"id": rec["user_id"]}, {"$set": {"password_hash": hash_password(body.new_password), "pending_invite": False}})
     await db.password_reset_tokens.update_one({"token": body.token}, {"$set": {"used": True}})
     return {"ok": True, "message": "Your password has been updated. You can now sign in."}
 
