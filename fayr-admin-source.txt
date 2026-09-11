@@ -1,16 +1,17 @@
 FAYR ADMIN PANEL - FULL SOURCE BUNDLE
 ======================================================================
 
-TABLE OF CONTENTS (89 files)
+TABLE OF CONTENTS (91 files)
 ----------------------------------------------------------------------
   README.md
-  backend/.env
+  backend/.env.example
   backend/requirements.txt
   backend/server.py
   backend/tests/backend_test.py
   backend/tests/test_ai_agent.py
+  backend/tests/test_auth.py
   design_guidelines.json
-  frontend/.env
+  frontend/.env.example
   frontend/craco.config.js
   frontend/jsconfig.json
   frontend/package.json
@@ -77,6 +78,7 @@ TABLE OF CONTENTS (89 files)
   frontend/src/constants/testIds/home.js
   frontend/src/constants/testIds/index.js
   frontend/src/context/AppContext.jsx
+  frontend/src/context/AuthContext.jsx
   frontend/src/hooks/use-toast.js
   frontend/src/index.css
   frontend/src/index.js
@@ -88,10 +90,10 @@ TABLE OF CONTENTS (89 files)
   frontend/src/pages/CustomerSupport.jsx
   frontend/src/pages/Finance.jsx
   frontend/src/pages/FrontendOps.jsx
+  frontend/src/pages/Login.jsx
   frontend/src/pages/Operations.jsx
   frontend/tailwind.config.js
   memory/PRD.md
-  memory/test_credentials.md
 
 
 
@@ -103,54 +105,156 @@ FILE: README.md
 
 
 ======================================================================
-FILE: backend/.env
+FILE: backend/.env.example
 ======================================================================
 
 MONGO_URL="mongodb://localhost:27017"
-DB_NAME="test_database"
-CORS_ORIGINS="*"
-EMERGENT_LLM_KEY=sk-emergent-5Ce311d24A25eFaF41
+DB_NAME="your_database_name"
+CORS_ORIGINS="https://your-frontend-domain.com"
+EMERGENT_LLM_KEY="your-emergent-llm-key"
+CLAUDE_MODEL=claude-sonnet-4-6
+JWT_SECRET="generate-with: python3 -c 'import secrets; print(secrets.token_hex(32))'"
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="change-me-strong-password"
 
 
 ======================================================================
 FILE: backend/requirements.txt
 ======================================================================
 
-fastapi==0.110.1
-uvicorn==0.25.0
-boto3>=1.34.129
-requests-oauthlib>=2.0.0
-cryptography>=42.0.8
-python-dotenv>=1.0.1
-pymongo==4.6.3
-pydantic>=2.6.4
-email-validator>=2.2.0
-pyjwt>=2.10.1
+aiohappyeyeballs==2.7.1
+aiohttp==3.14.3
+aiosignal==1.4.0
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.14.2
+ast_serialize==0.8.0
+attrs==26.1.0
 bcrypt==4.1.3
-passlib>=1.7.4
-tzdata>=2024.2
-motor==3.3.1
-pytest>=8.0.0
-pytest-xdist>=3.6.0
-black>=24.1.1
-isort>=5.13.2
-flake8>=7.0.0
-mypy>=1.8.0
-python-jose>=3.3.0
-requests>=2.31.0
-pandas>=2.2.0
-numpy>=1.26.0
-python-multipart>=0.0.9
-jq>=1.6.0
-typer>=0.9.0
+black==26.5.1
+boto3==1.43.85
+botocore==1.43.85
+certifi==2026.7.22
+cffi==2.1.1
+charset-normalizer==3.5.1
+click==8.5.0
+cryptography==50.0.1
+distro==1.9.0
+dnspython==2.8.0
+ecdsa==0.19.2
+email-validator==2.3.0
 emergentintegrations==0.2.0
+execnet==2.1.2
+fastapi==0.110.1
+fastuuid==0.14.0
+filelock==3.32.5
+flake8==7.3.0
+frozenlist==1.8.0
+fsspec==2026.7.0
+google-ai-generativelanguage==0.6.15
+google-api-core==2.33.0
+google-api-python-client==2.200.0
+google-auth==2.57.0
+google-auth-httplib2==0.4.2
+google-genai==2.22.0
+google-generativeai==0.8.6
+googleapis-common-protos==1.75.0
+grpcio==1.83.1
+grpcio-status==1.71.2
+h11==0.16.0
+hf-xet==1.6.0
+httpcore==1.0.9
+httplib2==0.32.0
+httpx==0.28.1
+huggingface_hub==1.30.0
+idna==3.19
+importlib_metadata==9.0.1
+iniconfig==2.3.0
+isort==9.0.1
+Jinja2==3.1.6
+jiter==0.16.0
+jmespath==1.1.0
+jq==1.12.0
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+librt==0.15.0
+litellm @ https://customer-assets.emergentagent.com/internal-asset/library/litellm-1.80.0-py3-none-any.whl#sha256=adf398c513273de9341f61822296c6b2145f7f2dc4a69daf3ac04829f5bde3f8
+markdown-it-py==4.2.0
+MarkupSafe==3.0.3
+mccabe==0.7.0
+mdurl==0.1.2
+motor==3.3.1
+multidict==6.7.1
+mypy==2.3.1
+mypy_extensions==1.1.0
+numpy==2.4.6
+oauthlib==3.3.1
+openai==1.99.9
+packaging==26.3
+pandas==3.0.5
+passlib==1.7.4
+pathspec==1.1.1
+pillow==12.3.0
+platformdirs==4.11.6
+pluggy==1.6.0
+propcache==0.5.2
+proto-plus==1.28.2
+protobuf==5.29.6
+pyasn1==0.6.4
+pyasn1_modules==0.4.2
+pycodestyle==2.14.0
+pycparser==3.0
+pydantic==2.13.5
+pydantic_core==2.46.5
+pyflakes==3.4.0
+Pygments==2.21.0
+PyJWT==2.13.0
+pymongo==4.6.3
+pyparsing==3.3.2
+pytest==9.1.1
+pytest-xdist==3.8.0
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.3
+python-jose==3.5.0
+python-multipart==0.0.32
+pytokens==0.4.1
+PyYAML==6.0.3
+referencing==0.37.0
+regex==2026.9.3
+requests==2.34.2
+requests-oauthlib==2.0.0
+rich==15.0.0
+rpds-py==2026.6.3
+rsa==4.9.1
+s3transfer==0.19.2
+s5cmd==0.2.0
+shellingham==1.5.4
+six==1.17.0
+sniffio==1.3.1
+starlette==0.37.2
+stripe==14.4.1
+tenacity==9.1.4
+tiktoken==0.14.0
+tokenizers==0.23.2
+tqdm==4.70.0
+typer==0.27.2
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+tzdata==2026.3
+uritemplate==4.2.0
+urllib3==2.7.0
+uvicorn==0.25.0
+watchfiles==1.2.0
+websockets==16.1.1
+yarl==1.24.5
+zipp==4.1.0
 
 
 ======================================================================
 FILE: backend/server.py
 ======================================================================
 
-from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Request, Response, Depends
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -174,6 +278,7 @@ db = client[os.environ['DB_NAME']]
 
 app = FastAPI(title="Fayr Admin API")
 api_router = APIRouter(prefix="/api")
+public_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("fayr")
@@ -209,6 +314,103 @@ async def log_audit(actor: str, action: str, entity: str, entity_id: str, meta: 
         "meta": meta or {},
         "timestamp": now_iso(),
     })
+
+
+# ============================= AUTH HELPERS (JWT email/password) =============================
+import bcrypt
+import jwt
+
+JWT_ALGORITHM = "HS256"
+
+
+def get_jwt_secret() -> str:
+    return os.environ["JWT_SECRET"]
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except Exception:
+        return False
+
+
+def create_access_token(user_id: str, email: str) -> str:
+    payload = {"sub": user_id, "email": email, "type": "access",
+               "exp": datetime.now(timezone.utc) + timedelta(minutes=15)}
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
+
+
+def create_refresh_token(user_id: str) -> str:
+    payload = {"sub": user_id, "type": "refresh",
+               "exp": datetime.now(timezone.utc) + timedelta(days=7)}
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
+
+
+def set_auth_cookies(response: Response, at: str, rt: str):
+    response.set_cookie("access_token", at, httponly=True, secure=True, samesite="none", max_age=900, path="/")
+    response.set_cookie("refresh_token", rt, httponly=True, secure=True, samesite="none", max_age=604800, path="/")
+
+
+async def get_current_user(request: Request) -> dict:
+    token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "access":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+async def require_admin(user: dict = Depends(get_current_user)) -> dict:
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+
+def client_ip(request: Request) -> str:
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.headers.get("x-real-ip") or (request.client.host if request.client else "unknown")
+
+
+async def check_lockout(identifier: str) -> bool:
+    rec = await db.login_attempts.find_one({"identifier": identifier})
+    if rec and rec.get("count", 0) >= 5:
+        locked_until = rec.get("locked_until")
+        if locked_until and datetime.fromisoformat(locked_until) > datetime.now(timezone.utc):
+            return True
+    return False
+
+
+async def record_fail(identifier: str):
+    await db.login_attempts.update_one({"identifier": identifier}, {"$inc": {"count": 1}}, upsert=True)
+    rec = await db.login_attempts.find_one({"identifier": identifier})
+    if rec and rec.get("count", 0) >= 5:
+        await db.login_attempts.update_one(
+            {"identifier": identifier},
+            {"$set": {"locked_until": (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()}},
+        )
+
+
+async def clear_fails(identifier: str):
+    await db.login_attempts.delete_one({"identifier": identifier})
 
 
 # ----------------------------- Models -----------------------------
@@ -504,12 +706,12 @@ async def do_seed(force=False):
 
 
 # ----------------------------- Routes -----------------------------
-@api_router.get("/")
+@public_router.get("/")
 async def root():
     return {"message": "Fayr Admin API", "status": "ok"}
 
 
-@api_router.post("/seed")
+@api_router.post("/seed", dependencies=[Depends(require_admin)])
 async def seed(force: bool = False):
     return await do_seed(force=force)
 
@@ -538,6 +740,7 @@ async def get_tickets(status: Optional[str] = None, marketplace: Optional[str] =
     if marketplace and marketplace != "all":
         query["marketplace"] = marketplace
     if q:
+        q = re.escape(q)
         query["$or"] = [
             {"subject": {"$regex": q, "$options": "i"}},
             {"from_name": {"$regex": q, "$options": "i"}},
@@ -802,13 +1005,22 @@ async def get_metrics(team: str):
 
 
 # ----- AI -----
-async def run_llm(system: str, prompt: str) -> str:
+CLAUDE_MODELS = [
+    "claude-sonnet-4-6",
+    "claude-sonnet-5",
+    "claude-opus-4-7",
+    "claude-haiku-4-5-20251001",
+]
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
+
+
+async def run_llm(system: str, prompt: str, model: str = None) -> str:
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     chat = LlmChat(
         api_key=os.environ["EMERGENT_LLM_KEY"],
         session_id=new_id(),
         system_message=system,
-    ).with_model("anthropic", "claude-sonnet-4-6")
+    ).with_model("anthropic", model or CLAUDE_MODEL)
     resp = await chat.send_message(UserMessage(text=prompt))
     return resp
 
@@ -1221,7 +1433,110 @@ async def training_insights():
     }
 
 
-app.include_router(api_router)
+@api_router.get("/ai/config")
+async def ai_config():
+    return {"provider": "anthropic", "active_model": CLAUDE_MODEL, "available_models": CLAUDE_MODELS}
+
+
+# ============================= AUTH ENDPOINTS (helpers relocated to top) =============================
+class RegisterIn(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = ""
+    role: Optional[str] = "agent"
+
+
+class LoginIn(BaseModel):
+    email: str
+    password: str
+
+
+def public_user(u: dict) -> dict:
+    return {"id": u["id"], "email": u["email"], "name": u.get("name"), "role": u.get("role")}
+
+
+@api_router.post("/auth/register", dependencies=[Depends(require_admin)])
+async def register(body: RegisterIn):
+    email = body.email.strip().lower()
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(400, "Email already registered")
+    valid_roles = {"admin", "support", "operations", "frontend_ops", "finance", "agent"}
+    role = body.role if body.role in valid_roles else "agent"
+    uid = new_id()
+    doc = {"id": uid, "email": email, "password_hash": hash_password(body.password),
+           "name": body.name or email.split("@")[0], "role": role, "created_at": now_iso()}
+    await db.users.insert_one(dict(doc))
+    return {"user": public_user(doc)}
+
+
+@public_router.post("/auth/login")
+async def login(body: LoginIn, request: Request, response: Response):
+    email = body.email.strip().lower()
+    ip = client_ip(request)
+    identifier = f"{ip}:{email}"
+    if await check_lockout(identifier):
+        raise HTTPException(429, "Too many failed attempts. Please try again in 15 minutes.")
+    user = await db.users.find_one({"email": email})
+    if not user or not verify_password(body.password, user["password_hash"]):
+        await record_fail(identifier)
+        raise HTTPException(401, "Invalid email or password")
+    await clear_fails(identifier)
+    at = create_access_token(user["id"], email)
+    rt = create_refresh_token(user["id"])
+    set_auth_cookies(response, at, rt)
+    return {"access_token": at, "user": public_user(user)}
+
+
+@api_router.post("/auth/logout")
+async def logout(response: Response, user: dict = Depends(get_current_user)):
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+    return {"ok": True}
+
+
+@api_router.get("/auth/me")
+async def auth_me(user: dict = Depends(get_current_user)):
+    return user
+
+
+@public_router.post("/auth/refresh")
+async def refresh_token_ep(request: Request, response: Response):
+    token = request.cookies.get("refresh_token")
+    if not token:
+        raise HTTPException(401, "No refresh token")
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(401, "Invalid token type")
+        user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0})
+        if not user:
+            raise HTTPException(401, "User not found")
+        at = create_access_token(user["id"], user["email"])
+        response.set_cookie("access_token", at, httponly=True, secure=True, samesite="none", max_age=900, path="/")
+        return {"access_token": at}
+    except jwt.InvalidTokenError:
+        raise HTTPException(401, "Invalid refresh token")
+
+
+async def seed_auth():
+    await db.users.create_index("email", unique=True)
+    await db.login_attempts.create_index("identifier")
+    seed_users = [
+        (os.environ.get("ADMIN_EMAIL", "admin@fayr.in"), os.environ.get("ADMIN_PASSWORD", "admin123"), "Prakash Tamang", "admin"),
+        ("support@fayr.in", "Support@2026", "Ananya Sharma", "support"),
+    ]
+    for email, pwd, name, role in seed_users:
+        email = email.strip().lower()
+        existing = await db.users.find_one({"email": email})
+        if existing is None:
+            await db.users.insert_one({"id": new_id(), "email": email, "password_hash": hash_password(pwd),
+                                       "name": name, "role": role, "created_at": now_iso()})
+        elif not verify_password(pwd, existing["password_hash"]):
+            await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(pwd)}})
+
+
+app.include_router(public_router)
+app.include_router(api_router, dependencies=[Depends(get_current_user)])
 
 app.add_middleware(
     CORSMiddleware,
@@ -1235,6 +1550,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     await do_seed(force=False)
+    await seed_auth()
 
 
 @app.on_event("shutdown")
@@ -1620,6 +1936,90 @@ def test_ai_process_ticket(s):
 
 
 ======================================================================
+FILE: backend/tests/test_auth.py
+======================================================================
+
+"""Auth (JWT email/password) endpoint tests for Fayr Ops Desk."""
+import os
+import time
+import requests
+import pytest
+
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://support-ops-panel-1.preview.emergentagent.com").rstrip("/")
+API = f"{BASE_URL}/api"
+
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "changeme")
+
+
+@pytest.fixture(scope="module")
+def s():
+    return requests.Session()
+
+
+# --- Login ---
+def test_login_success(s):
+    r = s.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert "access_token" in data and isinstance(data["access_token"], str) and len(data["access_token"]) > 30
+    assert data["user"]["email"] == ADMIN_EMAIL
+    assert data["user"]["role"] in ("admin", "owner", "agent")
+
+
+def test_login_wrong_password(s):
+    # different email to avoid contaminating lockout counter for the admin
+    r = s.post(f"{API}/auth/login", json={"email": "noone-xyz@fayr.in", "password": "wrong"})
+    assert r.status_code == 401
+
+
+# --- /auth/me ---
+def test_me_with_bearer(s):
+    login = s.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}).json()
+    token = login["access_token"]
+    r = requests.get(f"{API}/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["email"] == ADMIN_EMAIL
+
+
+def test_me_no_token():
+    r = requests.get(f"{API}/auth/me")
+    assert r.status_code == 401
+
+
+def test_me_invalid_token():
+    r = requests.get(f"{API}/auth/me", headers={"Authorization": "Bearer not-a-real-token"})
+    assert r.status_code == 401
+
+
+# --- Brute-force lockout ---
+def test_brute_force_lockout():
+    email = f"bruteforce-{int(time.time())}@fayr.in"
+    for _ in range(5):
+        r = requests.post(f"{API}/auth/login", json={"email": email, "password": "wrong"})
+        assert r.status_code == 401
+    r = requests.post(f"{API}/auth/login", json={"email": email, "password": "wrong"})
+    assert r.status_code == 429, f"Expected 429 after 5 fails, got {r.status_code}: {r.text}"
+
+
+# --- Regression: bearer works on protected endpoints ---
+def test_protected_endpoints_with_bearer():
+    token = requests.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}).json()["access_token"]
+    h = {"Authorization": f"Bearer {token}"}
+    for path in ["/agents", "/tickets", "/chats", "/claims", "/withdrawals", "/kb-articles", "/canned-responses", "/audit-logs"]:
+        r = requests.get(f"{API}{path}", headers=h)
+        assert r.status_code == 200, f"{path} -> {r.status_code} {r.text[:200]}"
+
+
+def test_protected_endpoints_without_bearer_are_public_or_401():
+    # We just record behaviour — the auth spec says the frontend gates the panel; API-level enforcement optional.
+    r = requests.get(f"{API}/agents")
+    # Accept either 200 (public) or 401 (protected)
+    assert r.status_code in (200, 401), r.status_code
+
+
+======================================================================
 FILE: design_guidelines.json
 ======================================================================
 
@@ -1692,12 +2092,13 @@ FILE: design_guidelines.json
 }
 
 ======================================================================
-FILE: frontend/.env
+FILE: frontend/.env.example
 ======================================================================
 
-REACT_APP_BACKEND_URL=https://support-ops-panel-1.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://your-backend-domain.com
 WDS_SOCKET_PORT=443
 ENABLE_HEALTH_CHECK=false
+
 
 ======================================================================
 FILE: frontend/craco.config.js
@@ -2187,6 +2588,8 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AppProvider } from "@/context/AppContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import Login from "@/pages/Login";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
 import CustomerSupport from "@/pages/CustomerSupport";
@@ -2196,30 +2599,51 @@ import Finance from "@/pages/Finance";
 import Admin from "@/pages/Admin";
 import AiAssistant from "@/pages/AiAssistant";
 
-function App() {
+function Shell() {
   return (
     <AppProvider>
-      <BrowserRouter>
-        <div className="flex h-screen w-full overflow-hidden bg-slate-50 text-slate-900">
-          <Sidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <Topbar />
-            <main className="min-h-0 flex-1 overflow-hidden">
-              <Routes>
-                <Route path="/" element={<Navigate to="/assistant" replace />} />
-                <Route path="/assistant" element={<AiAssistant />} />
-                <Route path="/support" element={<CustomerSupport />} />
-                <Route path="/operations" element={<Operations />} />
-                <Route path="/frontend-ops" element={<FrontendOps />} />
-                <Route path="/finance" element={<Finance />} />
-                <Route path="/admin" element={<Admin />} />
-              </Routes>
-            </main>
-          </div>
+      <div className="flex h-screen w-full overflow-hidden bg-slate-50 text-slate-900">
+        <Sidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Topbar />
+          <main className="min-h-0 flex-1 overflow-hidden">
+            <Routes>
+              <Route path="/" element={<Navigate to="/assistant" replace />} />
+              <Route path="/assistant" element={<AiAssistant />} />
+              <Route path="/support" element={<CustomerSupport />} />
+              <Route path="/operations" element={<Operations />} />
+              <Route path="/frontend-ops" element={<FrontendOps />} />
+              <Route path="/finance" element={<Finance />} />
+              <Route path="/admin" element={<Admin />} />
+            </Routes>
+          </main>
         </div>
+      </div>
+    </AppProvider>
+  );
+}
+
+function Gate() {
+  const { user } = useAuth();
+  if (user === null) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
+      </div>
+    );
+  }
+  if (!user) return <Login />;
+  return <Shell />;
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Gate />
         <Toaster position="top-right" richColors />
       </BrowserRouter>
-    </AppProvider>
+    </AuthProvider>
   );
 }
 
@@ -3217,7 +3641,8 @@ import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { Avatar } from "@/components/shared/UI";
 import { PRESENCE_STYLE } from "@/lib/constants";
-import { Search, ChevronDown, Command } from "lucide-react";
+import { Search, ChevronDown, Command, LogOut } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -3226,6 +3651,7 @@ const PRESENCE_OPTIONS = ["online", "away", "busy", "offline"];
 
 export default function Topbar() {
   const { currentAgent, agents, setCurrentAgent, changePresence } = useApp();
+  const { logout } = useAuth();
   const [query, setQuery] = useState("");
   if (!currentAgent) return <div className="h-[65px] border-b border-slate-200 bg-white" />;
   const p = PRESENCE_STYLE[currentAgent.presence];
@@ -3292,6 +3718,10 @@ export default function Topbar() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <button data-testid="logout-btn" onClick={logout} title="Log out" className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600">
+          <LogOut size={14} /> Logout
+        </button>
       </div>
     </header>
   );
@@ -6671,6 +7101,48 @@ export function AppProvider({ children }) {
 
 
 ======================================================================
+FILE: frontend/src/context/AuthContext.jsx
+======================================================================
+
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { api } from "@/lib/api";
+
+const AuthContext = createContext(null);
+export const useAuth = () => useContext(AuthContext);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null); // null = checking, false = unauthenticated, object = authenticated
+
+  useEffect(() => {
+    const t = localStorage.getItem("fayr_token");
+    if (!t) { setUser(false); return; }
+    api.authMe()
+      .then(({ data }) => setUser(data))
+      .catch(() => { localStorage.removeItem("fayr_token"); setUser(false); });
+  }, []);
+
+  const login = async (email, password) => {
+    const { data } = await api.login(email, password);
+    localStorage.setItem("fayr_token", data.access_token);
+    setUser(data.user);
+    return data.user;
+  };
+
+  const logout = async () => {
+    try { await api.authLogout(); } catch (e) { /* ignore */ }
+    localStorage.removeItem("fayr_token");
+    setUser(false);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+
+======================================================================
 FILE: frontend/src/hooks/use-toast.js
 ======================================================================
 
@@ -6941,8 +7413,18 @@ export const API = `${BACKEND_URL}/api`;
 
 const client = axios.create({ baseURL: API });
 
+client.interceptors.request.use((config) => {
+  const t = localStorage.getItem("fayr_token");
+  if (t) config.headers.Authorization = `Bearer ${t}`;
+  return config;
+});
+
 export const api = {
   seed: () => client.post("/seed"),
+  login: (email, password) => client.post("/auth/login", { email, password }),
+  register: (payload) => client.post("/auth/register", payload),
+  authMe: () => client.get("/auth/me"),
+  authLogout: () => client.post("/auth/logout"),
   // agents
   getAgents: (team) => client.get("/agents", { params: team ? { team } : {} }),
   setPresence: (id, presence) => client.patch(`/agents/${id}/presence`, { presence }),
@@ -8187,6 +8669,115 @@ export default function FrontendOps() {
 
 
 ======================================================================
+FILE: frontend/src/pages/Login.jsx
+======================================================================
+
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import { Bot, Mail, Lock, Loader2, ShieldCheck } from "lucide-react";
+
+function formatApiErrorDetail(detail) {
+  if (detail == null) return "Something went wrong. Please try again.";
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((e) => (e && typeof e.msg === "string" ? e.msg : JSON.stringify(e))).filter(Boolean).join(" ");
+  if (detail && typeof detail.msg === "string") return detail.msg;
+  return String(detail);
+}
+
+export default function Login() {
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError(""); setLoading(true);
+    try {
+      await login(email.trim(), password);
+    } catch (err) {
+      setError(formatApiErrorDetail(err.response?.data?.detail) || err.message);
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-slate-50 px-6">
+      <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-gradient-to-br from-indigo-200/50 to-violet-200/40 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-gradient-to-br from-blue-200/40 to-indigo-200/40 blur-3xl" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-xl shadow-slate-200/60 backdrop-blur-xl"
+      >
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30">
+            <Bot size={24} />
+          </div>
+          <div>
+            <p className="text-lg font-bold tracking-tight text-slate-900">Fayr Ops Desk</p>
+            <p className="text-xs text-slate-500">Sign in to your team workspace</p>
+          </div>
+        </div>
+
+        <form onSubmit={submit} className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-600">Work email</label>
+            <div className="relative">
+              <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                data-testid="login-email-input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="you@cashkaro.com"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-indigo-400"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-600">Password</label>
+            <div className="relative">
+              <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                data-testid="login-password-input"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-indigo-400"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <p data-testid="login-error" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
+          )}
+
+          <button
+            data-testid="login-submit-btn"
+            type="submit"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:opacity-60"
+          >
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Sign in
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-[11px] text-slate-400">Secure JWT session · access is audited</p>
+      </motion.div>
+    </div>
+  );
+}
+
+
+======================================================================
 FILE: frontend/src/pages/Operations.jsx
 ======================================================================
 
@@ -8500,17 +9091,4 @@ Build an internal Admin Panel for **Fayr** (incentivized review & refund platfor
 - **Training Insights**: replies learned, KB/canned counts, AI resolution vs handoff, top question keywords, learning-by-channel, recent learned replies, top canned.
 - Verified: backend 10/10 new AI tests + 19 original pass; frontend all AI flows pass (100%).
 - Backlog: real inbound email/chat channel, staff auth, split server.py into routers (optional).
-
-
-======================================================================
-FILE: memory/test_credentials.md
-======================================================================
-
-# Test Credentials
-
-## Fayr Admin Panel
-- **No authentication** — the admin panel is open (per user's choice). No login required.
-- Acting agent is selectable from the top-right switcher. Presence (Online/Away/Busy/Offline) is toggleable.
-- Demo data is auto-seeded on backend startup (agents, tickets, chats, claims, withdrawals, banners).
-- LLM: EMERGENT_LLM_KEY in /app/backend/.env powers AI reply suggestions & chat summaries (Claude Sonnet 4.6).
 

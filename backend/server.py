@@ -22,6 +22,7 @@ db = client[os.environ['DB_NAME']]
 
 app = FastAPI(title="Fayr Admin API")
 api_router = APIRouter(prefix="/api")
+public_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("fayr")
@@ -57,6 +58,103 @@ async def log_audit(actor: str, action: str, entity: str, entity_id: str, meta: 
         "meta": meta or {},
         "timestamp": now_iso(),
     })
+
+
+# ============================= AUTH HELPERS (JWT email/password) =============================
+import bcrypt
+import jwt
+
+JWT_ALGORITHM = "HS256"
+
+
+def get_jwt_secret() -> str:
+    return os.environ["JWT_SECRET"]
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except Exception:
+        return False
+
+
+def create_access_token(user_id: str, email: str) -> str:
+    payload = {"sub": user_id, "email": email, "type": "access",
+               "exp": datetime.now(timezone.utc) + timedelta(minutes=15)}
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
+
+
+def create_refresh_token(user_id: str) -> str:
+    payload = {"sub": user_id, "type": "refresh",
+               "exp": datetime.now(timezone.utc) + timedelta(days=7)}
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
+
+
+def set_auth_cookies(response: Response, at: str, rt: str):
+    response.set_cookie("access_token", at, httponly=True, secure=True, samesite="none", max_age=900, path="/")
+    response.set_cookie("refresh_token", rt, httponly=True, secure=True, samesite="none", max_age=604800, path="/")
+
+
+async def get_current_user(request: Request) -> dict:
+    token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "access":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+async def require_admin(user: dict = Depends(get_current_user)) -> dict:
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+
+def client_ip(request: Request) -> str:
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.headers.get("x-real-ip") or (request.client.host if request.client else "unknown")
+
+
+async def check_lockout(identifier: str) -> bool:
+    rec = await db.login_attempts.find_one({"identifier": identifier})
+    if rec and rec.get("count", 0) >= 5:
+        locked_until = rec.get("locked_until")
+        if locked_until and datetime.fromisoformat(locked_until) > datetime.now(timezone.utc):
+            return True
+    return False
+
+
+async def record_fail(identifier: str):
+    await db.login_attempts.update_one({"identifier": identifier}, {"$inc": {"count": 1}}, upsert=True)
+    rec = await db.login_attempts.find_one({"identifier": identifier})
+    if rec and rec.get("count", 0) >= 5:
+        await db.login_attempts.update_one(
+            {"identifier": identifier},
+            {"$set": {"locked_until": (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()}},
+        )
+
+
+async def clear_fails(identifier: str):
+    await db.login_attempts.delete_one({"identifier": identifier})
 
 
 # ----------------------------- Models -----------------------------
@@ -352,12 +450,12 @@ async def do_seed(force=False):
 
 
 # ----------------------------- Routes -----------------------------
-@api_router.get("/")
+@public_router.get("/")
 async def root():
     return {"message": "Fayr Admin API", "status": "ok"}
 
 
-@api_router.post("/seed")
+@api_router.post("/seed", dependencies=[Depends(require_admin)])
 async def seed(force: bool = False):
     return await do_seed(force=force)
 
@@ -386,6 +484,7 @@ async def get_tickets(status: Optional[str] = None, marketplace: Optional[str] =
     if marketplace and marketplace != "all":
         query["marketplace"] = marketplace
     if q:
+        q = re.escape(q)
         query["$or"] = [
             {"subject": {"$regex": q, "$options": "i"}},
             {"from_name": {"$regex": q, "$options": "i"}},
@@ -1083,97 +1182,7 @@ async def ai_config():
     return {"provider": "anthropic", "active_model": CLAUDE_MODEL, "available_models": CLAUDE_MODELS}
 
 
-# ============================= AUTH (JWT email/password) =============================
-import bcrypt
-import jwt
-
-JWT_ALGORITHM = "HS256"
-
-
-def get_jwt_secret() -> str:
-    return os.environ["JWT_SECRET"]
-
-
-def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
-
-def verify_password(plain: str, hashed: str) -> bool:
-    try:
-        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
-    except Exception:
-        return False
-
-
-def create_access_token(user_id: str, email: str) -> str:
-    payload = {"sub": user_id, "email": email, "type": "access",
-               "exp": datetime.now(timezone.utc) + timedelta(minutes=15)}
-    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
-
-
-def create_refresh_token(user_id: str) -> str:
-    payload = {"sub": user_id, "type": "refresh",
-               "exp": datetime.now(timezone.utc) + timedelta(days=7)}
-    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
-
-
-def set_auth_cookies(response: Response, at: str, rt: str):
-    response.set_cookie("access_token", at, httponly=True, secure=True, samesite="none", max_age=900, path="/")
-    response.set_cookie("refresh_token", rt, httponly=True, secure=True, samesite="none", max_age=604800, path="/")
-
-
-async def get_current_user(request: Request) -> dict:
-    token = request.cookies.get("access_token")
-    if not token:
-        auth_header = request.headers.get("Authorization", "")
-        if auth_header.startswith("Bearer "):
-            token = auth_header[7:]
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    try:
-        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
-        if payload.get("type") != "access":
-            raise HTTPException(status_code=401, detail="Invalid token type")
-        user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        return user
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-
-def client_ip(request: Request) -> str:
-    xff = request.headers.get("x-forwarded-for")
-    if xff:
-        return xff.split(",")[0].strip()
-    return request.headers.get("x-real-ip") or (request.client.host if request.client else "unknown")
-
-
-async def check_lockout(identifier: str) -> bool:
-    rec = await db.login_attempts.find_one({"identifier": identifier})
-    if rec and rec.get("count", 0) >= 5:
-        locked_until = rec.get("locked_until")
-        if locked_until and datetime.fromisoformat(locked_until) > datetime.now(timezone.utc):
-            return True
-    return False
-
-
-async def record_fail(identifier: str):
-    await db.login_attempts.update_one({"identifier": identifier}, {"$inc": {"count": 1}}, upsert=True)
-    rec = await db.login_attempts.find_one({"identifier": identifier})
-    if rec and rec.get("count", 0) >= 5:
-        await db.login_attempts.update_one(
-            {"identifier": identifier},
-            {"$set": {"locked_until": (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()}},
-        )
-
-
-async def clear_fails(identifier: str):
-    await db.login_attempts.delete_one({"identifier": identifier})
-
-
+# ============================= AUTH ENDPOINTS (helpers relocated to top) =============================
 class RegisterIn(BaseModel):
     email: str
     password: str
@@ -1190,22 +1199,21 @@ def public_user(u: dict) -> dict:
     return {"id": u["id"], "email": u["email"], "name": u.get("name"), "role": u.get("role")}
 
 
-@api_router.post("/auth/register")
-async def register(body: RegisterIn, response: Response):
+@api_router.post("/auth/register", dependencies=[Depends(require_admin)])
+async def register(body: RegisterIn):
     email = body.email.strip().lower()
     if await db.users.find_one({"email": email}):
         raise HTTPException(400, "Email already registered")
+    valid_roles = {"admin", "support", "operations", "frontend_ops", "finance", "agent"}
+    role = body.role if body.role in valid_roles else "agent"
     uid = new_id()
     doc = {"id": uid, "email": email, "password_hash": hash_password(body.password),
-           "name": body.name or email.split("@")[0], "role": body.role or "agent", "created_at": now_iso()}
+           "name": body.name or email.split("@")[0], "role": role, "created_at": now_iso()}
     await db.users.insert_one(dict(doc))
-    at = create_access_token(uid, email)
-    rt = create_refresh_token(uid)
-    set_auth_cookies(response, at, rt)
-    return {"access_token": at, "user": public_user(doc)}
+    return {"user": public_user(doc)}
 
 
-@api_router.post("/auth/login")
+@public_router.post("/auth/login")
 async def login(body: LoginIn, request: Request, response: Response):
     email = body.email.strip().lower()
     ip = client_ip(request)
@@ -1235,7 +1243,7 @@ async def auth_me(user: dict = Depends(get_current_user)):
     return user
 
 
-@api_router.post("/auth/refresh")
+@public_router.post("/auth/refresh")
 async def refresh_token_ep(request: Request, response: Response):
     token = request.cookies.get("refresh_token")
     if not token:
@@ -1271,7 +1279,8 @@ async def seed_auth():
             await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(pwd)}})
 
 
-app.include_router(api_router)
+app.include_router(public_router)
+app.include_router(api_router, dependencies=[Depends(get_current_user)])
 
 app.add_middleware(
     CORSMiddleware,

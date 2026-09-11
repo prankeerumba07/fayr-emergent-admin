@@ -8,16 +8,15 @@ OUT_TXT = "/app/fayr-admin-source.txt"
 INCLUDE_FILES = [
     "backend/server.py",
     "backend/requirements.txt",
-    "backend/.env",
+    "backend/.env.example",
     "frontend/package.json",
     "frontend/tailwind.config.js",
     "frontend/postcss.config.js",
     "frontend/craco.config.js",
     "frontend/jsconfig.json",
-    "frontend/.env",
+    "frontend/.env.example",
     "design_guidelines.json",
     "memory/PRD.md",
-    "memory/test_credentials.md",
     "README.md",
 ]
 INCLUDE_DIRS = [
@@ -27,11 +26,15 @@ INCLUDE_DIRS = [
 ]
 EXCLUDE_PARTS = {"node_modules", "__pycache__", ".git", "build", "dist", ".cache", "venv", ".pytest_cache"}
 EXCLUDE_EXT = {".pyc", ".map", ".lock"}
+# Never bundle real secrets/credentials, even if referenced elsewhere.
+EXCLUDE_NAMES = {".env", "test_credentials.md", "auth_testing.md"}
 
 
 def wanted(rel):
     parts = set(rel.split(os.sep))
     if parts & EXCLUDE_PARTS:
+        return False
+    if os.path.basename(rel) in EXCLUDE_NAMES:
         return False
     if os.path.splitext(rel)[1] in EXCLUDE_EXT:
         return False

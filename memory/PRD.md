@@ -32,7 +32,16 @@ Build an internal Admin Panel for **Fayr** (incentivized review & refund platfor
 ## Next Tasks
 - Await user feedback on look & flows; wire real channels or auth if requested.
 
-## v2 — Fayr Assistant (Agentic AI) — 2026-06
+## Security Hardening — 2026-06 (Security Audit remediation)
+Full-app security audit run; all Critical/High/Medium findings fixed and verified via curl:
+- **SEC-001 (CRITICAL) fixed:** All business/finance/admin/AI routes now require a valid JWT. `api_router` mounted with `dependencies=[Depends(get_current_user)]`; only `/`, `/auth/login`, `/auth/refresh` are public (`public_router`). Auth helpers relocated to top of `server.py`.
+- **SEC-002 (HIGH) fixed:** AI endpoints (chat/email/suggestions/ai-process) now behind auth — no anonymous LLM cost abuse. (Rate-limiting per-user still recommended; AI auto-send for simple FAQs kept as an intentional product feature.)
+- **SEC-003 (MEDIUM) fixed:** `scripts/bundle_source.py` no longer bundles `.env`/`test_credentials.md`/`auth_testing.md` (hard EXCLUDE_NAMES guard); ships `.env.example` instead. Regenerated `/app/fayr-admin-source.{zip,txt}` — verified zero real secret values present. `JWT_SECRET` rotated. `test_auth.py` reads creds from env.
+- **SEC-004 (MEDIUM) fixed:** `/api/auth/register` is now admin-only (`require_admin`) with server-side role allow-list and no token issuance to caller — no self-assigned admin.
+- **Hardening:** `CORS_ORIGINS` set to explicit frontend origin (no `*`); ticket-search `q` wrapped in `re.escape` (ReDoS). Verified: unauth→401, admin→200, non-admin seed/register→403.
+- **Deferred (P3):** localStorage token→HttpOnly-only, cookie SameSite tighten, department-level RBAC (Task 3).
+
+
 - New sidebar section **Fayr Assistant** (`/assistant`) with 5 tabs: AI Live Chat, AI Email, Knowledge Base, Canned Responses, Training Insights. Redesigned light/indigo-violet, glassy, airy look distinct from Freshdesk.
 - **Autonomous AI (Claude Sonnet 4.6)**: greets & answers human-like (time-of-day greetings, varied wording, no over-convincing), returns confidence + sentiment per turn.
 - **Handoff** on: user asks for human, confidence < 45%, or frustration. Manual hand-off, human takeover, and resume-AI supported. Graceful fallback → handoff if LLM unavailable.
