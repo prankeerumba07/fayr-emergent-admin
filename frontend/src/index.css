@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@700;800;900&family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,7 +11,11 @@ body {
 }
 
 h1, h2, h3, h4, .font-display {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+}
+
+.font-logo {
+  font-family: 'Alexandria', 'Poppins', sans-serif;
 }
 
 .font-mono, code {
@@ -20,31 +24,32 @@ h1, h2, h3, h4, .font-display {
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* Fayr brand palette — cream / ink / green / yellow */
+    --background: 64 63% 95%;        /* cream #F9FAE9 */
+    --foreground: 0 0% 10%;          /* ink #191919 */
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 222 47% 15%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 15%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 214 95% 93%;
-    --accent-foreground: 222 47% 15%;
-    --destructive: 347 77% 50%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 15%;
-    --chart-1: 217 91% 60%;
-    --chart-2: 160 84% 39%;
-    --chart-3: 32 95% 44%;
-    --chart-4: 347 77% 50%;
-    --chart-5: 262 83% 58%;
-    --radius: 0.75rem;
+    --popover-foreground: 0 0% 10%;
+    --primary: 105 84% 36%;          /* green #30A90F */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 63 46% 90%;         /* creamDeep #F1F2D9 */
+    --secondary-foreground: 0 0% 10%;
+    --muted: 63 39% 92%;
+    --muted-foreground: 0 0% 36%;    /* sub #5C5C5C */
+    --accent: 70 50% 91%;            /* greenBg #F1F5DB */
+    --accent-foreground: 0 0% 10%;
+    --destructive: 5 78% 53%;        /* red #E5392B */
+    --destructive-foreground: 0 0% 100%;
+    --border: 63 39% 90%;            /* line #ECEDDC */
+    --input: 63 39% 90%;
+    --ring: 105 84% 36%;             /* green */
+    --chart-1: 105 84% 36%;          /* green */
+    --chart-2: 215 96% 71%;          /* blue #6CAAFC */
+    --chart-3: 37 91% 55%;           /* amber #F5A623 */
+    --chart-4: 5 78% 53%;            /* red #E5392B */
+    --chart-5: 267 71% 50%;          /* purple #7926D9 */
+    --radius: 0.9rem;
   }
 }
 

@@ -24,7 +24,7 @@ function Shell() {
   const can = (key) => canAccessSection(role, key);
   return (
     <AppProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-slate-50 text-slate-900">
+      <div className="flex h-screen w-full overflow-hidden bg-[#F9FAE9] text-[#191919]">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar />
@@ -57,8 +57,8 @@ function Gate() {
 
   if (user === null) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
+      <div className="flex h-screen w-full items-center justify-center bg-[#F9FAE9]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#ECEDDC] border-t-[#30A90F]" />
       </div>
     );
   }

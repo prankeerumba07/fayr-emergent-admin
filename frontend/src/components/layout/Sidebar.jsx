@@ -13,12 +13,9 @@ export default function Sidebar() {
   return (
     <aside className="flex w-[248px] shrink-0 flex-col border-r border-slate-200 bg-white" data-testid="sidebar">
       <div className="flex items-center gap-3 px-6 py-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
-          <span className="font-mono text-lg font-bold">F</span>
-        </div>
         <div>
-          <p className="text-base font-bold leading-none tracking-tight text-slate-900">Fayr</p>
-          <p className="mt-1 text-[11px] font-medium uppercase tracking-widest text-slate-400">Ops Desk</p>
+          <p className="font-logo text-2xl font-extrabold leading-none tracking-tight text-[#191919]">fayr<span className="text-[#F5C400]">.</span></p>
+          <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#5C5C5C]">Ops Desk</p>
         </div>
       </div>
 
@@ -31,19 +28,19 @@ export default function Sidebar() {
               data-testid="nav-ai"
               className={({ isActive }) =>
                 `group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                  isActive ? "text-white" : "text-indigo-700 hover:bg-indigo-50"
+                  isActive ? "text-white" : "text-[#30A90F] hover:bg-[#F1F5DB]"
                 }`
               }
             >
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <motion.span layoutId="active-pill" className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+                    <motion.span layoutId="active-pill" className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-[#68B642] to-[#30A90F]" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
                   )}
-                  {!isActive && <span className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-50 to-violet-50" />}
-                  <AI_NAV.icon size={18} className={isActive ? "text-white" : "text-indigo-600"} />
+                  {!isActive && <span className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-[#F1F5DB] to-[#EAF7E4]" />}
+                  <AI_NAV.icon size={18} className={isActive ? "text-white" : "text-[#30A90F]"} />
                   <span>{AI_NAV.label}</span>
-                  <span className={`ml-auto rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${isActive ? "bg-white/20 text-white" : "bg-indigo-600 text-white"}`}>New</span>
+                  <span className={`ml-auto rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${isActive ? "bg-white/20 text-white" : "bg-[#30A90F] text-white"}`}>New</span>
                 </>
               )}
             </NavLink>
@@ -62,7 +59,7 @@ export default function Sidebar() {
               data-testid={`nav-${t.key}`}
               className={({ isActive }) =>
                 `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                  isActive ? "bg-[#191919] text-white" : "text-[#5C5C5C] hover:bg-[#F1F2D9]"
                 }`
               }
             >
@@ -71,11 +68,11 @@ export default function Sidebar() {
                   {isActive && (
                     <motion.span
                       layoutId="active-pill"
-                      className="absolute inset-0 -z-10 rounded-xl bg-slate-900"
+                      className="absolute inset-0 -z-10 rounded-xl bg-[#191919]"
                       transition={{ type: "spring", stiffness: 400, damping: 32 }}
                     />
                   )}
-                  <Icon size={18} className={isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600"} />
+                  <Icon size={18} className={isActive ? "text-white" : "text-[#68B642] group-hover:text-[#30A90F]"} />
                   <span>{t.label}</span>
                 </>
               )}
@@ -84,9 +81,9 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="m-3 rounded-xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-4">
-        <div className="flex items-center gap-2 text-slate-900">
-          <Sparkles size={15} className="text-blue-600" />
+      <div className="m-3 rounded-xl border border-[#ECEDDC] bg-gradient-to-b from-[#F1F5DB] to-white p-4">
+        <div className="flex items-center gap-2 text-[#191919]">
+          <Sparkles size={15} className="text-[#30A90F]" />
           <p className="text-xs font-semibold">AI Assist enabled</p>
         </div>
         <p className="mt-1.5 text-[11px] leading-relaxed text-slate-500">

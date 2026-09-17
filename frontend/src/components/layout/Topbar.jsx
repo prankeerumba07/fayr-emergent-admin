@@ -80,7 +80,7 @@ export default function Topbar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <button data-testid="logout-btn" onClick={logout} title="Log out" className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600">
+        <button data-testid="logout-btn" onClick={logout} title="Log out" className="flex items-center gap-1.5 rounded-xl border border-[#ECEDDC] bg-white px-3 py-2 text-xs font-medium text-[#5C5C5C] transition-colors hover:bg-[#FFDCDC] hover:text-[#E5392B]">
           <LogOut size={14} /> Logout
         </button>
       </div>

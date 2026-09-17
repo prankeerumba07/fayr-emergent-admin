@@ -32,6 +32,12 @@ Build an internal Admin Panel for **Fayr** (incentivized review & refund platfor
 ## Next Tasks
 - Await user feedback on look & flows; wire real channels or auth if requested.
 
+## Admin Redesign — Fayr brand system — 2026-06 (iteration 6)
+Re-skinned the entire admin to match the uploaded `fayr-design` artifact (verified via screenshots — login, AI Assistant, Admin all render on-brand):
+- **Palette (global CSS vars in `index.css`):** cream background `#F9FAE9`, ink text `#191919`, green primary `#30A90F`/`#68B642`, yellow accent `#FFE000`/`#F5C400`; semantic tones blue/purple/amber/red preserved. shadcn `--primary/--ring/--chart-*` remapped to Fayr palette.
+- **Fonts:** Poppins (headings/`.font-display`), Inter (body), Alexandria (`.font-logo` "fayr." wordmark).
+- **Components:** Sidebar shows the `fayr.` wordmark (yellow dot) + green nav; all indigo/violet brand gradients across pages + AI components (AiLiveChat, AiEmail, KnowledgeBase, CannedResponses, TrainingInsights), Login/Forgot/Reset, StaffManager, Topbar converted to Fayr green. App background set to cream.
+
 ## Team, Access & Recovery — 2026-06 (iteration 5)
 Four features added, all verified 100% (backend 13/13 pytest + full frontend flows — `/app/test_reports/iteration_5.json`):
 - **Department Permissions:** role→section access enforced server-side via `authorize_request` + `section_for_path` (mounted on `api_router`) and mirrored on the frontend (`ROLE_SECTIONS`, filtered Sidebar, role-gated routes, `NoAccess` page). Map: admin→all; support→Fayr Assistant + Customer Support; operations→Operations; frontend_ops→Frontend Ops; finance→Finance; agent→none. Disallowed routes redirect to the role's default section.

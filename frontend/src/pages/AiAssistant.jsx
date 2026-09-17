@@ -25,16 +25,16 @@ export default function AiAssistant() {
   return (
     <div className="flex h-full flex-col">
       <div className="relative overflow-hidden border-b border-slate-200/70 bg-white/70 px-8 py-5 backdrop-blur-xl">
-        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-gradient-to-br from-indigo-200/50 to-violet-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-gradient-to-br from-[#C7E7B4]/50 to-[#C7E7B4]/40 blur-3xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#68B642] to-[#30A90F] text-white shadow-lg shadow-[#68B642]/30">
               <Bot size={22} />
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-slate-900" data-testid="page-title">Fayr Assistant</h1>
               <p className="flex items-center gap-1.5 text-xs text-slate-500">
-                <Sparkles size={12} className="text-indigo-500" /> Autonomous AI support · learns from every reply · powered by Claude Sonnet 4.6
+                <Sparkles size={12} className="text-[#68B642]" /> Autonomous AI support · learns from every reply · powered by Claude Sonnet 4.6
               </p>
             </div>
           </div>
@@ -49,7 +49,7 @@ export default function AiAssistant() {
                   onClick={() => setTab(t.key)}
                   className={`relative inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${active ? "text-white" : "text-slate-600 hover:text-slate-900"}`}
                 >
-                  {active && <motion.span layoutId="ai-tab-pill" className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600" transition={PILL_SPRING} />}
+                  {active && <motion.span layoutId="ai-tab-pill" className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-[#68B642] to-[#30A90F]" transition={PILL_SPRING} />}
                   <Icon size={15} /> {t.label}
                 </button>
               );

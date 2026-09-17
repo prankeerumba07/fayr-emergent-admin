@@ -19,7 +19,7 @@ const RESULT_MOTION = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y
 function emailBubbleClass(isNote, isCustomer, isAi) {
   if (isNote) return "border-amber-200 bg-amber-50";
   if (isCustomer) return "border-slate-200 bg-white";
-  if (isAi) return "border-transparent bg-gradient-to-br from-indigo-600 to-violet-600 text-white";
+  if (isAi) return "border-transparent bg-gradient-to-br from-[#68B642] to-[#30A90F] text-white";
   return "border-slate-800 bg-slate-900 text-white";
 }
 
@@ -70,10 +70,10 @@ export default function AiEmail() {
           {tickets.map((t) => {
             const active = selected?.id === t.id;
             return (
-              <button key={t.id} data-testid="ai-email-item" onClick={() => setSelected(t)} className={`flex w-full flex-col gap-1 border-b border-slate-100 px-4 py-3 text-left transition-colors ${active ? "bg-indigo-50/70" : "hover:bg-slate-50"}`}>
+              <button key={t.id} data-testid="ai-email-item" onClick={() => setSelected(t)} className={`flex w-full flex-col gap-1 border-b border-slate-100 px-4 py-3 text-left transition-colors ${active ? "bg-[#F1F5DB]/70" : "hover:bg-slate-50"}`}>
                 <div className="flex items-center justify-between"><span className="truncate text-sm font-semibold text-slate-800">{t.from_name}</span><span className="text-[10px] text-slate-400">{timeAgo(t.created_at)}</span></div>
                 <p className="truncate text-xs text-slate-500">{t.subject}</p>
-                <div className="flex items-center gap-1.5"><MarketplaceBadge name={t.marketplace} />{t.ai_handled && <Pill className="border-indigo-200 bg-indigo-50 text-indigo-700"><Bot size={10} /> AI replied</Pill>}</div>
+                <div className="flex items-center gap-1.5"><MarketplaceBadge name={t.marketplace} />{t.ai_handled && <Pill className="border-[#C7E7B4] bg-[#F1F5DB] text-[#218200]"><Bot size={10} /> AI replied</Pill>}</div>
               </button>
             );
           })}
@@ -88,7 +88,7 @@ export default function AiEmail() {
                 <h3 className="truncate text-base font-semibold text-slate-900">{selected.subject}</h3>
                 <p className="flex items-center gap-1.5 text-xs text-slate-500"><Mail size={12} /> {selected.from_email} <StatusBadge status={selected.status} /></p>
               </div>
-              <button data-testid="ai-process-btn" onClick={process} disabled={processing} className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.03] disabled:opacity-60">
+              <button data-testid="ai-process-btn" onClick={process} disabled={processing} className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#68B642] to-[#30A90F] px-4 py-2 text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.03] disabled:opacity-60">
                 {processing ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />} Let AI handle this
               </button>
             </div>
@@ -110,7 +110,7 @@ export default function AiEmail() {
               })}
 
               {result && (
-                <motion.div {...RESULT_MOTION} data-testid="ai-email-result" className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm">
+                <motion.div {...RESULT_MOTION} data-testid="ai-email-result" className="rounded-2xl border border-[#C7E7B4] bg-white p-4 shadow-sm">
                   <div className="mb-2 flex items-center justify-between">
                     <p className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
                       {result.mode === "sent" ? <><Zap size={15} className="text-emerald-600" /> Auto-sent by AI</> : <><PencilLine size={15} className="text-amber-600" /> AI draft — needs your review</>}
@@ -120,7 +120,7 @@ export default function AiEmail() {
                   {result.canned_used && <p className="mb-2 text-[11px] text-slate-400">Based on canned response: <span className="font-medium text-slate-600">{result.canned_used}</span></p>}
                   {result.mode === "draft" ? (
                     <>
-                      <textarea data-testid="ai-draft-textarea" value={draft} onChange={(e) => setDraft(e.target.value)} rows={6} className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-indigo-400" />
+                      <textarea data-testid="ai-draft-textarea" value={draft} onChange={(e) => setDraft(e.target.value)} rows={6} className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-[#68B642]" />
                       <div className="mt-2 flex justify-end gap-2">
                         <button onClick={() => { setResult(null); setDraft(""); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50">Discard</button>
                         <button data-testid="approve-draft-btn" onClick={approveDraft} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-700"><Send size={13} /> Approve & send</button>

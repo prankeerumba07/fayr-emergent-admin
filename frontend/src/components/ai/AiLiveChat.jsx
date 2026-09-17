@@ -25,7 +25,7 @@ function confTone(c) {
 
 function chatBubbleClass(isCustomer, isAi) {
   if (isCustomer) return "rounded-tl-sm border border-slate-200 bg-white text-slate-700";
-  if (isAi) return "rounded-tr-sm bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20";
+  if (isAi) return "rounded-tr-sm bg-gradient-to-br from-[#68B642] to-[#30A90F] text-white shadow-md shadow-[#68B642]/20";
   return "rounded-tr-sm bg-slate-900 text-white";
 }
 
@@ -105,7 +105,7 @@ export default function AiLiveChat() {
       <div className="flex min-h-0 flex-col border-r border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <p className="text-sm font-semibold text-slate-800">Conversations</p>
-          <button data-testid="new-chat-btn" onClick={() => setNewOpen(true)} className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-2.5 py-1.5 text-xs font-medium text-white shadow-sm transition-transform hover:scale-[1.03]">
+          <button data-testid="new-chat-btn" onClick={() => setNewOpen(true)} className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#68B642] to-[#30A90F] px-2.5 py-1.5 text-xs font-medium text-white shadow-sm transition-transform hover:scale-[1.03]">
             <Plus size={13} /> Simulate
           </button>
         </div>
@@ -114,7 +114,7 @@ export default function AiLiveChat() {
           {chats.map((c) => {
             const active = selected?.id === c.id;
             return (
-              <button key={c.id} data-testid="ai-chat-item" onClick={() => setSelected(c)} className={`flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition-colors ${active ? "bg-indigo-50/70" : "hover:bg-slate-50"}`}>
+              <button key={c.id} data-testid="ai-chat-item" onClick={() => setSelected(c)} className={`flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition-colors ${active ? "bg-[#F1F5DB]/70" : "hover:bg-slate-50"}`}>
                 <Avatar name={c.customer_name} size={36} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
@@ -124,7 +124,7 @@ export default function AiLiveChat() {
                   <p className="truncate text-xs text-slate-500">{c.messages[c.messages.length - 1]?.body}</p>
                   <div className="mt-1">
                     {c.ai_active ? (
-                      <Pill className="border-indigo-200 bg-indigo-50 text-indigo-700"><Bot size={10} /> AI handling</Pill>
+                      <Pill className="border-[#C7E7B4] bg-[#F1F5DB] text-[#218200]"><Bot size={10} /> AI handling</Pill>
                     ) : (
                       <Pill className="border-slate-200 bg-slate-100 text-slate-600"><User2 size={10} /> Human</Pill>
                     )}
@@ -151,13 +151,13 @@ export default function AiLiveChat() {
               <div className="flex items-center gap-2">
                 {selected.ai_active ? (
                   <>
-                    <Pill className="border-indigo-200 bg-indigo-50 text-indigo-700"><Bot size={11} /> AI active</Pill>
+                    <Pill className="border-[#C7E7B4] bg-[#F1F5DB] text-[#218200]"><Bot size={11} /> AI active</Pill>
                     <button data-testid="chat-handoff-btn" onClick={handoff} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"><Hand size={13} /> Hand off</button>
                   </>
                 ) : (
                   <>
                     <button data-testid="chat-takeover-btn" onClick={takeover} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 hover:bg-emerald-100"><UserRound size={13} /> Take over</button>
-                    <button data-testid="chat-resume-ai-btn" onClick={resumeAi} className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-700 hover:bg-indigo-100"><Bot size={13} /> Resume AI</button>
+                    <button data-testid="chat-resume-ai-btn" onClick={resumeAi} className="inline-flex items-center gap-1.5 rounded-lg border border-[#C7E7B4] bg-[#F1F5DB] px-3 py-2 text-xs font-medium text-[#218200] hover:bg-[#EAF7E4]"><Bot size={13} /> Resume AI</button>
                   </>
                 )}
               </div>
@@ -177,7 +177,7 @@ export default function AiLiveChat() {
                 return (
                   <div key={m.id} className={`flex ${isCustomer ? "justify-start" : "justify-end"}`}>
                     <div className={`max-w-[72%] rounded-2xl px-4 py-2.5 ${chatBubbleClass(isCustomer, isAi)}`}>
-                      {!isCustomer && <p className={`mb-0.5 flex items-center gap-1 text-[10px] font-semibold ${isAi ? "text-indigo-100" : "text-slate-300"}`}>{isAi ? <><Bot size={10} /> Fayr Assistant</> : m.author_name}</p>}
+                      {!isCustomer && <p className={`mb-0.5 flex items-center gap-1 text-[10px] font-semibold ${isAi ? "text-[#EAF7E4]" : "text-slate-300"}`}>{isAi ? <><Bot size={10} /> Fayr Assistant</> : m.author_name}</p>}
                       <p className="text-sm leading-relaxed">{m.body}</p>
                       <p className={`mt-1 text-[10px] ${isCustomer ? "text-slate-400" : "text-white/60"}`}>{timeAgo(m.created_at)}</p>
                     </div>
@@ -187,7 +187,7 @@ export default function AiLiveChat() {
               <AnimatePresence>
                 {thinking && (
                   <motion.div {...THINKING_MOTION} className="flex justify-end">
-                    <div className="flex items-center gap-1.5 rounded-2xl rounded-tr-sm bg-gradient-to-br from-indigo-600 to-violet-600 px-4 py-3 shadow-md">
+                    <div className="flex items-center gap-1.5 rounded-2xl rounded-tr-sm bg-gradient-to-br from-[#68B642] to-[#30A90F] px-4 py-3 shadow-md">
                       {[0, 1, 2].map((i) => <motion.span key={i} className="h-2 w-2 rounded-full bg-white/80" animate={DOT_ANIM} transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />)}
                     </div>
                   </motion.div>
@@ -201,7 +201,7 @@ export default function AiLiveChat() {
                 <span className="mr-1 text-[11px] font-medium text-slate-400">Speak as</span>
                 <button data-testid="speak-as-customer" onClick={() => setSpeakAs("customer")} className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${speakAs === "customer" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>Customer</button>
                 <button data-testid="speak-as-agent" onClick={() => setSpeakAs("agent")} className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${speakAs === "agent" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>Agent</button>
-                {speakAs === "customer" && selected.ai_active && <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-indigo-500"><Sparkles size={11} /> AI will auto-reply</span>}
+                {speakAs === "customer" && selected.ai_active && <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-[#68B642]"><Sparkles size={11} /> AI will auto-reply</span>}
               </div>
               {speakAs === "customer" && (
                 <div className="mb-2 flex flex-wrap gap-1.5">
@@ -215,9 +215,9 @@ export default function AiLiveChat() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && !thinking && send()}
                   placeholder={speakAs === "customer" ? "Type a message as the customer…" : "Reply as a human agent…"}
-                  className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-indigo-400"
+                  className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#68B642]"
                 />
-                <button data-testid="ai-chat-send" onClick={send} disabled={thinking || !input.trim()} className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 p-2.5 text-white transition-transform hover:scale-105 disabled:opacity-50">
+                <button data-testid="ai-chat-send" onClick={send} disabled={thinking || !input.trim()} className="rounded-xl bg-gradient-to-r from-[#68B642] to-[#30A90F] p-2.5 text-white transition-transform hover:scale-105 disabled:opacity-50">
                   <Send size={16} />
                 </button>
               </div>
@@ -231,8 +231,8 @@ export default function AiLiveChat() {
       {/* right rail */}
       <div className="min-h-0 overflow-y-auto border-l border-slate-200 bg-white p-5">
         <div className="space-y-5">
-          <div className="rounded-2xl border border-indigo-100 bg-gradient-to-b from-indigo-50/60 to-white p-4">
-            <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"><Gauge size={14} className="text-indigo-600" /> Last AI decision</p>
+          <div className="rounded-2xl border border-[#EAF7E4] bg-gradient-to-b from-[#F1F5DB]/60 to-white p-4">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"><Gauge size={14} className="text-[#30A90F]" /> Last AI decision</p>
             {aiMeta ? (
               <div className="mt-3 space-y-3">
                 <div>
@@ -267,7 +267,7 @@ export default function AiLiveChat() {
           <div className="space-y-3 py-2">
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-600">Customer name</label>
-              <input data-testid="new-chat-name" value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} placeholder="e.g. Rahul Gupta" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400" />
+              <input data-testid="new-chat-name" value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} placeholder="e.g. Rahul Gupta" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#68B642]" />
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-600">Marketplace</label>
@@ -278,12 +278,12 @@ export default function AiLiveChat() {
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-600">First message</label>
-              <input data-testid="new-chat-message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400" />
+              <input data-testid="new-chat-message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#68B642]" />
             </div>
           </div>
           <DialogFooter>
             <button onClick={() => setNewOpen(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
-            <button data-testid="create-chat-confirm" onClick={createChat} disabled={!form.customer_name.trim() || thinking} className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">Start chat</button>
+            <button data-testid="create-chat-confirm" onClick={createChat} disabled={!form.customer_name.trim() || thinking} className="rounded-lg bg-gradient-to-r from-[#68B642] to-[#30A90F] px-4 py-2 text-sm font-medium text-white disabled:opacity-50">Start chat</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

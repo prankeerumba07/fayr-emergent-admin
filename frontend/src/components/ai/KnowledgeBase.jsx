@@ -9,8 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 
 const CATS = ["Getting Started", "Rewards", "Refunds", "Verification", "Payments", "Trust & Safety", "Account", "Technical", "General"];
 const CAT_COLOR = {
-  "Getting Started": "border-indigo-200 bg-indigo-50 text-indigo-700",
-  Rewards: "border-violet-200 bg-violet-50 text-violet-700",
+  "Getting Started": "border-[#C7E7B4] bg-[#F1F5DB] text-[#218200]",
+  Rewards: "border-[#C7E7B4] bg-[#F1F5DB] text-[#218200]",
   Refunds: "border-emerald-200 bg-emerald-50 text-emerald-700",
   Verification: "border-blue-200 bg-blue-50 text-blue-700",
   Payments: "border-amber-200 bg-amber-50 text-amber-700",
@@ -49,10 +49,10 @@ export default function KnowledgeBase() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-6 flex items-end justify-between">
           <div>
-            <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900"><BookOpen size={20} className="text-indigo-600" /> Knowledge Base</h2>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><Sparkles size={12} className="text-indigo-500" /> The AI reads these on every conversation. Edit anything and it applies immediately.</p>
+            <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900"><BookOpen size={20} className="text-[#30A90F]" /> Knowledge Base</h2>
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><Sparkles size={12} className="text-[#68B642]" /> The AI reads these on every conversation. Edit anything and it applies immediately.</p>
           </div>
-          <button data-testid="add-kb-btn" onClick={openNew} className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.03]"><Plus size={16} /> New article</button>
+          <button data-testid="add-kb-btn" onClick={openNew} className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#68B642] to-[#30A90F] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.03]"><Plus size={16} /> New article</button>
         </div>
 
         {articles.length === 0 && <EmptyState icon={FileText} title="No articles yet" subtitle="Add knowledge so the AI can answer accurately." />}
@@ -78,15 +78,15 @@ export default function KnowledgeBase() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>{editing ? "Edit article" : "New knowledge article"}</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
-            <input data-testid="kb-title-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title (e.g. Refund timelines)" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400" />
-            <select data-testid="kb-category-select" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400">
+            <input data-testid="kb-title-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title (e.g. Refund timelines)" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#68B642]" />
+            <select data-testid="kb-category-select" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#68B642]">
               {CATS.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
-            <textarea data-testid="kb-content-input" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder="What should the AI know?" className="w-full rounded-lg border border-slate-200 p-3 text-sm outline-none focus:border-indigo-400" />
+            <textarea data-testid="kb-content-input" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder="What should the AI know?" className="w-full rounded-lg border border-slate-200 p-3 text-sm outline-none focus:border-[#68B642]" />
           </div>
           <DialogFooter>
             <button onClick={() => setOpen(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
-            <button data-testid="save-kb-btn" onClick={save} className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white">Save</button>
+            <button data-testid="save-kb-btn" onClick={save} className="rounded-lg bg-gradient-to-r from-[#68B642] to-[#30A90F] px-4 py-2 text-sm font-medium text-white">Save</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

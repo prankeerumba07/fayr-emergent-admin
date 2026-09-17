@@ -29,9 +29,9 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-slate-50 px-6">
-      <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-gradient-to-br from-indigo-200/50 to-violet-200/40 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-gradient-to-br from-blue-200/40 to-indigo-200/40 blur-3xl" />
+    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-[#F9FAE9] px-6">
+      <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-gradient-to-br from-[#68B642]/20 to-[#F5C400]/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-gradient-to-br from-[#F5C400]/20 to-[#68B642]/20 blur-3xl" />
 
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -41,7 +41,7 @@ export default function ForgotPassword() {
         data-testid="forgot-password-page"
       >
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#68B642] to-[#30A90F] text-white shadow-lg shadow-[#30A90F]/30">
             <Bot size={24} />
           </div>
           <div>
@@ -68,7 +68,7 @@ export default function ForgotPassword() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="you@cashkaro.com"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-indigo-400"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-[#68B642]"
                 />
               </div>
             </div>
@@ -77,7 +77,7 @@ export default function ForgotPassword() {
               data-testid="forgot-submit-btn"
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#68B642] to-[#30A90F] py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:opacity-60"
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />} Send reset link
             </button>
